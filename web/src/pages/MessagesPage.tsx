@@ -43,7 +43,7 @@ export function MessagesPage() {
       ) : isLoading ? (
         <ListSkeleton />
       ) : !list.length ? (
-        <EmptyState icon={MessageSquare} title="No messages yet" description="After a showing, use “Generate client follow-up” to draft a message for your buyer." />
+        <EmptyState icon={MessageSquare} title="No messages yet" description="After a showing, use “Generate Follow-up” on the showing summary to draft a message for your buyer." />
       ) : (
         <div className="divide-y rounded-2xl border bg-card shadow-card">
           {list.map((m) => {

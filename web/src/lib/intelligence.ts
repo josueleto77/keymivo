@@ -75,11 +75,15 @@ export function confidenceProfile(prefs: ClientPreference[], reactions: Reaction
     .filter((p) => p.status === 'active' && p.preference_type !== 'neutral')
     .map((p) => {
       const words = p.value.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3)
+      const negativePref = NEGATIVE_TYPES.has(p.preference_type)
       const related = reactions.filter((r) => {
         const f = r.feature.toLowerCase()
-        return (p.category !== 'other' && inferCategory(r.feature) === p.category) || words.some((w) => f.includes(w))
+        if (f === 'overall') return false
+        if (words.some((w) => f.includes(w))) return true
+        // A broad category ("Location") says nothing about a specific dislike ("Busy road"): loving the
+        // location must not count as evidence against it. Only positive preferences match by category.
+        return !negativePref && p.category !== 'other' && inferCategory(r.feature) === p.category
       })
-      const negativePref = NEGATIVE_TYPES.has(p.preference_type)
       const values = related.map((r) => {
         const v = REACTION_VALUE[r.reaction] ?? 50
         // For dislikes, a negative reaction *confirms* the preference.

@@ -71,10 +71,17 @@ export function ComparePage() {
           | { positives?: { feature: string; detail: string }[]; concerns?: { title: string }[] }
           | undefined
         const count = (v: string[]) => rx.filter((r) => v.includes(r.reaction)).length
+        // Net sentiment per feature, so one feature can't be both the strength and the concern.
+        const net = new Map<string, number>()
+        for (const r of rx) {
+          if (r.feature === 'Overall') continue
+          const d = ['love', 'like'].includes(r.reaction) ? 1 : ['dislike', 'deal_breaker'].includes(r.reaction) ? -1 : 0
+          net.set(r.feature, (net.get(r.feature) ?? 0) + d)
+        }
         const topFeature = (vals: string[]) => {
-          const m = new Map<string, number>()
-          rx.filter((r) => vals.includes(r.reaction)).forEach((r) => m.set(r.feature, (m.get(r.feature) ?? 0) + 1))
-          return [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+          const positive = vals.includes('love')
+          const ranked = [...net.entries()].filter(([, n]) => (positive ? n > 0 : n < 0)).sort((a, b) => (positive ? b[1] - a[1] : a[1] - b[1]))
+          return ranked[0]?.[0] ?? null
         }
         return {
           p,

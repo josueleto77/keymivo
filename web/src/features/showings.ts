@@ -36,6 +36,24 @@ export function useStartShowing() {
           .maybeSingle(),
       )
       if (existing) return existing
+      // Started outside a tour? Attach it to this buyer's open tour that includes the home, so tour
+      // progress and the Tour Summary stay accurate.
+      if (!input.tour_id) {
+        const stops = unwrap(
+          await supabase
+            .from('tour_properties')
+            .select('tour_id, status, tours!inner(client_id, status, tour_date)')
+            .eq('property_id', input.property_id)
+            .eq('tours.client_id', input.client_id)
+            .in('tours.status', ['planned', 'active'])
+            .neq('status', 'completed'),
+        )
+        const today = new Date().toISOString().slice(0, 10)
+        const best = [...stops].sort(
+          (a, b) => Math.abs(Date.parse(a.tours.tour_date) - Date.parse(today)) - Math.abs(Date.parse(b.tours.tour_date) - Date.parse(today)),
+        )[0]
+        if (best) input = { ...input, tour_id: best.tour_id }
+      }
       const showing = unwrap(
         await supabase
           .from('showings')

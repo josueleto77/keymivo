@@ -130,13 +130,13 @@ function ClientCard({ c }: { c: ClientListItem }) {
       <div className="flex items-start gap-3">
         <InitialsAvatar name={fullName(c)} className="size-12" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate font-semibold">{fullName(c)}</h3>
+          <h3 className="font-semibold leading-snug">{fullName(c)}</h3>
+          <p className="text-sm text-muted">{formatBudget(c.target_price_min, c.target_price_max)}</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <Badge variant="accent">{labelFor(CLIENT_STATUSES, c.status)}</Badge>
             {c.is_demo && <DemoBadge />}
           </div>
-          <p className="text-sm text-muted">{formatBudget(c.target_price_min, c.target_price_max)}</p>
         </div>
-        <Badge variant="accent">{labelFor(CLIENT_STATUSES, c.status)}</Badge>
       </div>
       <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
         <div>

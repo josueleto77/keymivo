@@ -81,7 +81,9 @@ export function AppShell() {
         </nav>
         {access !== 'active' && (
           <Link to="/settings/billing" className={cn('mx-3 mb-3 rounded-xl px-3 py-2.5 text-xs', access === 'trial' ? 'bg-blue-50 text-secondary' : 'bg-amber-50 text-amber-800')}>
-            {access === 'trial' ? <><span className="font-semibold">Pro trial</span> · {daysLeft} days left · Upgrade</> : access === 'past_due' ? <span className="font-semibold">Payment issue — update billing</span> : <span className="font-semibold">Trial ended — choose a plan</span>}
+            {access === 'trial' ? (organization.stripe_subscription_id
+              ? <><span className="font-semibold">{organization.subscription_plan === 'team' ? 'Team' : 'Pro'}</span> · trial ends in {daysLeft} days</>
+              : <><span className="font-semibold">Pro trial</span> · {daysLeft} days left · Upgrade</>) : access === 'past_due' ? <span className="font-semibold">Payment issue — update billing</span> : <span className="font-semibold">Trial ended — choose a plan</span>}
           </Link>
         )}
         <div className="flex items-center gap-3 border-t px-4 py-3">
@@ -115,13 +117,15 @@ export function AppShell() {
         </div>
       </main>
 
-      {/* Mobile floating Start Showing */}
+      {/* Mobile floating Start Showing — only on list screens; detail pages have their own button and the FAB would cover actions */}
+      {['/', '/clients', '/properties', '/tours'].includes(location.pathname) && (
       <button
         onClick={() => setStartOpen(true)}
         className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 z-30 flex items-center gap-2 rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 active:scale-95 lg:hidden"
       >
         <Play className="size-4 fill-current" /> Start Showing
       </button>
+      )}
 
       {/* Mobile bottom nav */}
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 backdrop-blur lg:hidden">
