@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft } from 'lucide-react'
+import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ListingImport, type ExtractedListing } from '@/components/ListingImport'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/empty-state'
@@ -12,7 +14,8 @@ import { Field } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreateProperty, useProperty, useUpdateProperty } from '@/features/properties'
 import { PROPERTY_STATUSES, PROPERTY_TYPES, US_STATES } from '@/lib/constants'
-import type { Property } from '@/lib/types'
+import { supabase } from '@/lib/supabase'
+import type { Insert, Property } from '@/lib/types'
 import { toNumberOrNull } from '@/lib/utils'
 import { useSession } from '@/providers/AuthProvider'
 
@@ -78,6 +81,34 @@ function PropertyForm({ property }: { property?: Property }) {
   })
   const e = form.formState.errors
 
+  const [highlights, setHighlights] = React.useState<string[]>([])
+  function applyListing(l: ExtractedListing) {
+    const cur = form.getValues()
+    const pick = (v: string | number | null | undefined, fallback: string) => (v == null || v === '' ? fallback : String(v))
+    form.reset({
+      ...cur,
+      address_line1: pick(l.address_line1, cur.address_line1),
+      city: pick(l.city, cur.city),
+      state: l.state && (US_STATES as readonly string[]).includes(l.state) ? l.state : cur.state,
+      zip_code: pick(l.zip_code, cur.zip_code ?? ''),
+      listing_price: pick(l.listing_price, cur.listing_price ?? ''),
+      beds: pick(l.beds, cur.beds ?? ''),
+      baths: pick(l.baths, cur.baths ?? ''),
+      square_feet: pick(l.square_feet, cur.square_feet ?? ''),
+      lot_size: pick(l.lot_size, cur.lot_size ?? ''),
+      year_built: pick(l.year_built, cur.year_built ?? ''),
+      property_type: pick(l.property_type, cur.property_type ?? 'single_family'),
+      property_tax: pick(l.property_tax, cur.property_tax ?? ''),
+      hoa_fee: pick(l.hoa_fee, cur.hoa_fee ?? ''),
+      days_on_market: pick(l.days_on_market, cur.days_on_market ?? ''),
+      mls_number: pick(l.mls_number, cur.mls_number ?? ''),
+      listing_agent_name: pick(l.listing_agent_name, cur.listing_agent_name ?? ''),
+      listing_brokerage: pick(l.listing_brokerage, cur.listing_brokerage ?? ''),
+      status: pick(l.status, cur.status),
+    })
+    setHighlights(l.highlights ?? [])
+  }
+
   async function onSubmit(v: Values) {
     const payload = {
       address_line1: v.address_line1,
@@ -101,6 +132,12 @@ function PropertyForm({ property }: { property?: Property }) {
     }
     try {
       const saved = property ? await update.mutateAsync(payload) : await create.mutateAsync(payload)
+      if (!property && highlights.length) {
+        // Listing features become sourced Property Intel ("from listing sheet"), not facts we verified.
+        await supabase.from('property_intelligence').insert(
+          highlights.map((h) => ({ property_id: saved.id, category: 'listing', title: h, value: 'From listing sheet', source: 'agent_note' }) as Insert<'property_intelligence'>),
+        )
+      }
       toast.success(property ? 'Property updated' : 'Property added')
       navigate(`/properties/${saved.id}`)
     } catch (err) {
@@ -115,6 +152,10 @@ function PropertyForm({ property }: { property?: Property }) {
       </Link>
       <h1 className="mb-6 font-display text-2xl font-bold tracking-tight sm:text-3xl">{property ? 'Edit property' : 'Add property'}</h1>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        {!property && <ListingImport onExtracted={applyListing} />}
+        {highlights.length > 0 && (
+          <p className="text-xs text-muted">Listing highlights saved to Property Intel: {highlights.join(' · ')}</p>
+        )}
         <Card>
           <CardHeader><CardTitle>Address</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-6">
