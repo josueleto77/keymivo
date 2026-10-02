@@ -467,6 +467,11 @@ function ConsentSheet({ showing, open, onClose, onConfirmed }: { showing: Showin
           Keymivo can record and transcribe conversations to create showing notes. Make sure everyone participating has
           provided consent where legally required.
         </p>
+        {(showing.properties?.state ?? 'MA') === 'MA' && (
+          <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <b>Massachusetts requires the consent of everyone being recorded</b> (all-party consent). Ask every person present, including buyers and anyone else in the home.
+          </p>
+        )}
         <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border p-4">
           <Checkbox checked={checked} onCheckedChange={(v) => setChecked(v === true)} className="mt-0.5" />
           <span className="text-sm font-medium">I confirm required consent has been obtained.</span>

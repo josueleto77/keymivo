@@ -142,7 +142,7 @@ export function SignupPage() {
         </Field>
         <Button type="submit" className="w-full" size="lg" loading={form.formState.isSubmitting}>Create account</Button>
         <p className="text-center text-xs text-muted">
-          By continuing you agree to use Keymivo in compliance with the Fair Housing Act and applicable recording-consent laws.
+          By continuing you agree to the <Link to="/terms" className="underline">Terms</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>, and to use Keymivo in compliance with the Fair Housing Act and recording-consent laws.
         </p>
       </form>
     </AuthLayout>

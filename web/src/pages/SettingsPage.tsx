@@ -7,6 +7,8 @@ import { Input, NativeSelect } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
 import { PageHeader } from '@/components/ui/page-header'
 import { Link } from 'react-router-dom'
+import { PrivacyCard } from '@/components/PrivacyCard'
+import { useTeam } from '@/features/team'
 import { planLabel } from '@/lib/billing'
 import { US_STATES } from '@/lib/constants'
 import { supabase } from '@/lib/supabase'
@@ -15,6 +17,7 @@ import { useAuth, useSession } from '@/providers/AuthProvider'
 export function SettingsPage() {
   const { profile, organization } = useSession()
   const { refreshProfile } = useAuth()
+  const team = useTeam(organization.id)
   const qc = useQueryClient()
   const [form, setForm] = React.useState({
     first_name: profile.first_name ?? '',
@@ -91,6 +94,17 @@ export function SettingsPage() {
         <div className="flex justify-end"><Button type="submit" loading={saving}>Save changes</Button></div>
       </form>
 
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Link to="/settings/team" className="rounded-2xl border bg-card p-4 shadow-card hover:shadow-lift">
+          <div className="font-semibold">Team</div>
+          <div className="text-sm text-muted">Invite agents, roles and seats</div>
+        </Link>
+        <Link to="/settings/billing" className="rounded-2xl border bg-card p-4 shadow-card hover:shadow-lift">
+          <div className="font-semibold">Plan & billing</div>
+          <div className="text-sm text-muted">{planLabel(organization)}</div>
+        </Link>
+      </div>
+
       <Card className="mt-6">
         <CardHeader><CardTitle>Demo workspace</CardTitle></CardHeader>
         <CardContent>
@@ -101,6 +115,7 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      <div className="mt-6"><PrivacyCard soleMember={(team.data?.members.length ?? 1) <= 1} /></div>
     </div>
   )
 }

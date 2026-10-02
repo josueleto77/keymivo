@@ -3,6 +3,7 @@ import { ArrowDown, ArrowLeft, ArrowUp, CheckCircle2, FileText, Play, Trash2, X 
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PropertyImage } from '@/components/PropertyImage'
+import { TourSummary } from '@/components/TourSummary'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -82,6 +83,10 @@ export function TourDetailPage() {
           <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete tour"><Trash2 /></Button>
         </div>
       </div>
+
+      {stops.some((s) => s.status === 'completed') && (
+        <TourSummary tourId={tour.id} clientId={tour.client_id} propertyIds={stops.map((s) => s.property_id)} />
+      )}
 
       <div className="space-y-3">
         {stops.map((s, i) => {

@@ -19,6 +19,9 @@ import { ShowingCompletePage } from '@/pages/showings/ShowingCompletePage'
 import { TasksPage } from '@/pages/TasksPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { BillingPage } from '@/pages/BillingPage'
+import { TeamPage } from '@/pages/TeamPage'
+import { PrivacyPage, TermsPage } from '@/pages/LegalPages'
+import { JoinTeamPage } from '@/pages/auth/JoinTeamPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { PortalJoinPage } from '@/pages/portal/PortalJoinPage'
 import { PortalLayout } from '@/pages/portal/PortalLayout'
@@ -39,6 +42,9 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/portal/join" element={<PortalJoinPage />} />
+      <Route path="/join" element={<JoinTeamPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route element={<RequireSession />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
       </Route>
@@ -73,6 +79,7 @@ export default function App() {
           <Route path="tasks" element={<TasksPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/billing" element={<BillingPage />} />
+          <Route path="settings/team" element={<TeamPage />} />
           <Route path="compare" element={<ComparePage />} />
           <Route path="offers" element={<ComingSoonPage feature="offers" />} />
           <Route path="messages" element={<MessagesPage />} />

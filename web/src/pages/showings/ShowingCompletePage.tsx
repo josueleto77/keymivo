@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { useGenerateFollowup, type MessageItem } from '@/features/messages'
 import { useAnalyzeShowing, useShowingInsights } from '@/features/ai'
 import { splitPhotoUrl } from '@/features/properties'
-import { useShowing, useShowingRecordings, type ShowingDetail } from '@/features/showings'
+import { useDeleteRecording, useShowing, useShowingRecordings, type ShowingDetail } from '@/features/showings'
 import { sortedStops, useTour } from '@/features/tours'
 import { REACTIONS } from '@/lib/constants'
 import { cn, fullName, scoreLabel, scoreTone } from '@/lib/utils'
@@ -263,6 +263,7 @@ function ConfidenceBadge({ value }: { value: string | null }) {
 
 function CapturedData({ s }: { s: ShowingDetail }) {
   const recordings = useShowingRecordings(s.id)
+  const delRec = useDeleteRecording(s.id)
   const realtorReactions = s.buyer_reactions.filter((r) => r.source !== 'showing_ai')
   return (
     <details className="group mb-6 rounded-2xl border bg-card shadow-card" open={s.ai_status !== 'completed'}>
@@ -293,10 +294,20 @@ function CapturedData({ s }: { s: ShowingDetail }) {
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">{s.property_photos.map((p) => <Thumb key={p.id} photo={p} />)}</div>
         )}
         {!!recordings.data?.length && (
-          <p className="flex items-center gap-2 text-sm text-slate-600">
-            <Mic className="size-4" /> {recordings.data.length} recording{recordings.data.length === 1 ? '' : 's'} ·{' '}
-            {recordings.data.map((r) => r.transcription_status).join(', ')}
-          </p>
+          <ul className="space-y-1.5">
+            {recordings.data.map((r, i) => (
+              <li key={r.id} className="flex items-center gap-2 text-sm text-slate-600">
+                <Mic className="size-4" />
+                <span className="flex-1">Recording {i + 1}{r.duration_seconds ? ` · ${Math.round(r.duration_seconds / 60)} min` : ''} · transcription {r.transcription_status}</span>
+                <button
+                  onClick={() => { if (confirm('Delete this recording and its transcript permanently?')) delRec.mutate(r, { onSuccess: () => toast.success('Recording deleted'), onError: (e) => toast.error(e.message) }) }}
+                  className="text-xs font-semibold text-danger hover:underline"
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
         {!realtorReactions.length && !s.showing_notes.length && !s.property_photos.length && !recordings.data?.length && (
           <p className="text-sm text-muted">Nothing was captured.</p>

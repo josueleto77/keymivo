@@ -208,3 +208,16 @@ export function useEndShowing(showing: { id: string; tour_id: string | null; pro
     },
   })
 }
+
+/** Deletes the audio file and its row (transcripts cascade). */
+export function useDeleteRecording(showingId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (rec: { id: string; audio_url: string }) => {
+      const { error } = await supabase.storage.from('recordings').remove([rec.audio_url])
+      if (error) throw new Error(error.message)
+      unwrap(await supabase.from('recordings').delete().eq('id', rec.id))
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['showing-recordings', showingId] }),
+  })
+}

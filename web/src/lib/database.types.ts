@@ -883,6 +883,57 @@ export type Database = {
           },
         ]
       }
+      org_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          organization_id: string
+          revoked_at: string | null
+          role: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          organization_id?: string
+          revoked_at?: string | null
+          role?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          organization_id?: string
+          revoked_at?: string | null
+          role?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           cancel_at_period_end: boolean
@@ -1935,8 +1986,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_metrics: { Args: never; Returns: Json }
       accept_buyer_invite: { Args: { p_token: string }; Returns: string }
+      accept_team_invite: {
+        Args: { p_first_name: string; p_last_name: string; p_token: string }
+        Returns: string
+      }
+      admin_metrics: { Args: never; Returns: Json }
       can_access_org: { Args: { org: string }; Returns: boolean }
       complete_onboarding: {
         Args: {
@@ -1951,11 +2006,18 @@ export type Database = {
         Returns: string
       }
       create_buyer_invite: { Args: { p_member_id: string }; Returns: string }
+      create_team_invite: {
+        Args: { p_email: string; p_role: string }
+        Returns: string
+      }
       current_org_id: { Args: never; Returns: string }
       current_profile_id: { Args: never; Returns: string }
       get_buyer_invite: { Args: { p_token: string }; Returns: Json }
+      get_team_invite: { Args: { p_token: string }; Returns: Json }
+      is_org_manager: { Args: never; Returns: boolean }
       is_org_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      org_seat_limit: { Args: { p_org: string }; Returns: number }
       portal_data: { Args: never; Returns: Json }
       portal_property_ids: { Args: never; Returns: string[] }
       portal_rate_property: {
@@ -1969,7 +2031,13 @@ export type Database = {
       }
       portal_send_message: { Args: { p_content: string }; Returns: undefined }
       remove_demo_data: { Args: never; Returns: undefined }
+      remove_team_member: { Args: { p_profile_id: string }; Returns: undefined }
+      revoke_team_invite: { Args: { p_invite_id: string }; Returns: undefined }
       seed_demo_data: { Args: never; Returns: string }
+      set_member_role: {
+        Args: { p_profile_id: string; p_role: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

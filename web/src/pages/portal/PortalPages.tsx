@@ -3,6 +3,7 @@ import { CalendarDays, Heart, Mail, Phone, Search, Send } from 'lucide-react'
 import * as React from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { toast } from 'sonner'
+import { PrivacyCard } from '@/components/PrivacyCard'
 import { PropertyImage } from '@/components/PropertyImage'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -93,6 +94,8 @@ export function PortalHome() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{favorites.map((p) => <PropertyCard key={p.id} p={p} data={data} />)}</div>
         </section>
       )}
+
+      <PrivacyCard buyer />
     </div>
   )
 }
