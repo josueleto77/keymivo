@@ -342,6 +342,32 @@ export type Database = {
           },
         ]
       }
+      calendar_feeds: {
+        Row: {
+          created_at: string
+          profile_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          profile_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          profile_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_feeds_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_members: {
         Row: {
           client_id: string
@@ -811,6 +837,57 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          organization_id: string
+          read_at: string | null
+          recipient_id: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          organization_id: string
+          read_at?: string | null
+          recipient_id: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          organization_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1992,8 +2069,6 @@ export type Database = {
         Returns: string
       }
       admin_metrics: { Args: never; Returns: Json }
-      get_calendar_token: { Args: never; Returns: string }
-      rotate_calendar_token: { Args: never; Returns: string }
       can_access_org: { Args: { org: string }; Returns: boolean }
       complete_onboarding: {
         Args: {
@@ -2015,10 +2090,21 @@ export type Database = {
       current_org_id: { Args: never; Returns: string }
       current_profile_id: { Args: never; Returns: string }
       get_buyer_invite: { Args: { p_token: string }; Returns: Json }
+      get_calendar_token: { Args: never; Returns: string }
       get_team_invite: { Args: { p_token: string }; Returns: Json }
       is_org_manager: { Args: never; Returns: boolean }
       is_org_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      notify_client_agent: {
+        Args: {
+          p_body: string
+          p_client: string
+          p_kind: string
+          p_link: string
+          p_title: string
+        }
+        Returns: undefined
+      }
       org_seat_limit: { Args: { p_org: string }; Returns: number }
       portal_data: { Args: never; Returns: Json }
       portal_property_ids: { Args: never; Returns: string[] }
@@ -2035,6 +2121,7 @@ export type Database = {
       remove_demo_data: { Args: never; Returns: undefined }
       remove_team_member: { Args: { p_profile_id: string }; Returns: undefined }
       revoke_team_invite: { Args: { p_invite_id: string }; Returns: undefined }
+      rotate_calendar_token: { Args: never; Returns: string }
       seed_demo_data: { Args: never; Returns: string }
       set_member_role: {
         Args: { p_profile_id: string; p_role: string }

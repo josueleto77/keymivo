@@ -6,6 +6,7 @@ import * as React from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { LogoMark, Logo } from '@/components/brand/Logo'
 import { InitialsAvatar } from '@/components/ui/avatar'
+import { NotificationBell } from '@/components/NotificationBell'
 import { StartShowingDialog } from '@/components/StartShowingDialog'
 import { accessState, trialDaysLeft } from '@/lib/billing'
 import { UpgradeScreen } from '@/pages/BillingPage'
@@ -50,8 +51,9 @@ export function AppShell() {
     <div className="min-h-dvh">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-card lg:flex">
-        <div className="px-5 py-5">
+        <div className="flex items-center justify-between px-5 py-5">
           <Link to="/"><Logo markClassName="size-7" /></Link>
+          <NotificationBell />
         </div>
         <div className="px-3">
           <button
@@ -101,9 +103,12 @@ export function AppShell() {
       {/* Mobile top bar */}
       <header className="pt-safe sticky top-0 z-30 flex items-center justify-between border-b bg-card/90 px-4 py-3 backdrop-blur lg:hidden">
         <Link to="/"><Logo markClassName="size-6" className="[&>span:last-child]:text-lg" /></Link>
-        <Link to="/settings">
-          <InitialsAvatar name={fullName(profile) || '?'} className="size-8 text-xs" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <Link to="/settings">
+            <InitialsAvatar name={fullName(profile) || '?'} className="size-8 text-xs" />
+          </Link>
+        </div>
       </header>
 
       <main className="lg:pl-64">
