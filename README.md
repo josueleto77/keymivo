@@ -23,7 +23,7 @@ OpenAI or Stripe keys in the frontend — those go in Supabase Edge Function sec
 
 ## Production
 
-Live at **https://keymivo.vercel.app** (Vercel project `keymivo`). Redeploy from `web/`:
+Live at **https://app.keymivo.com** (also keymivo.vercel.app; Vercel project `keymivo`, DNS at Namecheap: A app → 76.76.21.21). Code: github.com/josueleto77/keymivo (private). Redeploy from `web/`:
 
 ```bash
 npx vercel deploy --prod --build-env VITE_SUPABASE_URL=https://ymilfkgnbrpmgmxghvqt.supabase.co --build-env VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_pX5yJOsbok7dCTRPHaOKdA_9XgLjY51
