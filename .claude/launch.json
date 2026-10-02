@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "keymivo-web",
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["-c", "cd /Users/josuegalindo/Documents/hometour-ai/web && exec npx vite --port 5173 --strictPort"],
+      "port": 5173
+    }
+  ]
+}
