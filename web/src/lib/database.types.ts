@@ -1992,6 +1992,8 @@ export type Database = {
         Returns: string
       }
       admin_metrics: { Args: never; Returns: Json }
+      get_calendar_token: { Args: never; Returns: string }
+      rotate_calendar_token: { Args: never; Returns: string }
       can_access_org: { Args: { org: string }; Returns: boolean }
       complete_onboarding: {
         Args: {

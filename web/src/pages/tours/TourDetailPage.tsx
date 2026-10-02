@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { ArrowDown, ArrowLeft, ArrowUp, CheckCircle2, FileText, Play, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, CalendarPlus, CheckCircle2, FileText, Play, Trash2, X } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PropertyImage } from '@/components/PropertyImage'
@@ -80,6 +80,9 @@ export function TourDetailPage() {
           <NativeSelect aria-label="Tour status" value={tour.status} onChange={(e) => update.mutate({ status: e.target.value })} className="w-auto">
             {TOUR_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </NativeSelect>
+          <Button variant="outline" asChild>
+            <a href={googleCalendarUrl(tour.name, fullName(tour.clients), tour.tour_date, stops)} target="_blank" rel="noreferrer"><CalendarPlus /> Add to calendar</a>
+          </Button>
           <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete tour"><Trash2 /></Button>
         </div>
       </div>
@@ -160,4 +163,28 @@ export function TourDetailPage() {
       </div>
     </div>
   )
+}
+
+/** Google Calendar "create event" link spanning the tour (first stop → last stop + 45 min). */
+function googleCalendarUrl(
+  name: string,
+  buyer: string,
+  date: string,
+  stops: { scheduled_time: string | null; properties: { address_line1: string; city: string } | null }[],
+) {
+  const d = date.replace(/-/g, '')
+  const times = stops.map((s) => s.scheduled_time).filter((t): t is string => !!t).sort()
+  const hhmm = (t: string, add = 0) => {
+    const [h, m] = t.split(':').map(Number)
+    const total = h! * 60 + m! + add
+    return `${String(Math.floor(total / 60)).padStart(2, '0')}${String(total % 60).padStart(2, '0')}00`
+  }
+  const next = new Date(`${date}T00:00:00`)
+  next.setDate(next.getDate() + 1)
+  const dates = times.length
+    ? `${d}T${hhmm(times[0]!)}/${d}T${hhmm(times.at(-1)!, 45)}`
+    : `${d}/${next.toISOString().slice(0, 10).replace(/-/g, '')}`
+  const details = stops.map((s, i) => `${i + 1}. ${s.scheduled_time ? s.scheduled_time.slice(0, 5) + ' ' : ''}${s.properties?.address_line1 ?? ''}, ${s.properties?.city ?? ''}`).join('\n')
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: `${name} · ${buyer}`, dates, details, ctz: 'America/New_York' })
+  return `https://calendar.google.com/calendar/render?${q.toString()}`
 }

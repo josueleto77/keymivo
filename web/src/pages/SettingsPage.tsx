@@ -7,6 +7,7 @@ import { Input, NativeSelect } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
 import { PageHeader } from '@/components/ui/page-header'
 import { Link } from 'react-router-dom'
+import { CalendarSyncCard } from '@/components/CalendarSyncCard'
 import { PrivacyCard } from '@/components/PrivacyCard'
 import { useTeam } from '@/features/team'
 import { planLabel } from '@/lib/billing'
@@ -115,6 +116,7 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      <div className="mt-6"><CalendarSyncCard /></div>
       <div className="mt-6"><PrivacyCard soleMember={(team.data?.members.length ?? 1) <= 1} /></div>
     </div>
   )
