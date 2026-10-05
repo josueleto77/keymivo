@@ -107,10 +107,10 @@ export function useDeleteNote(showingId: string) {
   })
 }
 
-const SENTIMENT: Record<ReactionValue, 'positive' | 'neutral' | 'negative'> = {
+export const SENTIMENT: Record<ReactionValue, 'positive' | 'neutral' | 'negative'> = {
   love: 'positive', like: 'positive', neutral: 'neutral', dislike: 'negative', deal_breaker: 'negative',
 }
-const STRENGTH: Record<ReactionValue, number> = { love: 5, like: 4, neutral: 3, dislike: 2, deal_breaker: 1 }
+export const STRENGTH: Record<ReactionValue, number> = { love: 5, like: 4, neutral: 3, dislike: 2, deal_breaker: 1 }
 
 export function useAddReaction(showing: { id: string; client_id: string; property_id: string }) {
   const qc = useQueryClient()

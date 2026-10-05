@@ -1,5 +1,5 @@
 import { formatDistanceToNowStrict } from 'date-fns'
-import { Camera, ChevronLeft, Heart, Mic, MicOff, PenLine, Square, ThumbsUp, Trash2, TriangleAlert } from 'lucide-react'
+import { Camera, ChevronLeft, Clock, CloudUpload, Heart, Mic, WifiOff, MicOff, PenLine, Square, ThumbsUp, Trash2, TriangleAlert } from 'lucide-react'
 import * as React from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -15,6 +15,9 @@ import {
   useAddNote, useAddReaction, useDeleteNote, useDeleteReaction, useEndShowing, useRecordConsent, useSaveRecording,
   useShowing, useShowingRecordings, type ShowingDetail,
 } from '@/features/showings'
+import { SENTIMENT, STRENGTH } from '@/features/showings'
+import { useOfflineSync } from '@/features/offlineSync'
+import { enqueue, isNetworkError } from '@/lib/offlineQueue'
 import { PHOTO_SUBJECTS, REACTIONS, REACTION_FEATURES, type ReactionValue } from '@/lib/constants'
 import { cn, fullName } from '@/lib/utils'
 import { useSession } from '@/providers/AuthProvider'
@@ -51,6 +54,7 @@ function ShowingMode({ showing }: { showing: ShowingDetail }) {
   const elapsed = useElapsed(showing.started_at)
   const [sheet, setSheet] = React.useState<Sheet>(null)
   const photoInput = React.useRef<HTMLInputElement>(null)
+  const sync = useOfflineSync(showing.id)
   const recorder = useRecorder(showing.id)
   const property = showing.properties!
   const client = showing.clients!
@@ -81,6 +85,14 @@ function ShowingMode({ showing }: { showing: ShowingDetail }) {
           </div>
           <div className="rounded-full bg-white/10 px-3 py-1.5 font-mono text-sm tabular-nums">{elapsed}</div>
         </div>
+        {(!sync.online || sync.pending.length > 0) && (
+          <div className={cn('flex items-center justify-center gap-2 py-1.5 text-xs font-semibold', sync.online ? 'bg-accent' : 'bg-amber-600')}>
+            {sync.online ? <CloudUpload className="size-3.5" /> : <WifiOff className="size-3.5" />}
+            {sync.online
+              ? `Syncing ${sync.pending.length} item${sync.pending.length === 1 ? '' : 's'}…`
+              : `No signal — ${sync.pending.length ? `${sync.pending.length} saved on this phone, ` : ''}keep capturing, it syncs automatically`}
+          </div>
+        )}
         {recorder.state === 'recording' && (
           <div className="flex items-center justify-center gap-2 bg-danger py-1.5 text-xs font-semibold">
             <span className="size-2 animate-pulse rounded-full bg-white" /> Recording · {recorder.elapsed}
@@ -125,9 +137,25 @@ function ShowingMode({ showing }: { showing: ShowingDetail }) {
         {/* Timeline */}
         <section className="mt-8">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-            Captured · {timeline.length}{recorder.count > 0 ? ` · ${recorder.count} recording${recorder.count === 1 ? '' : 's'}` : ''}
+            Captured · {timeline.length + sync.pending.length}{recorder.count > 0 ? ` · ${recorder.count} recording${recorder.count === 1 ? '' : 's'}` : ''}
           </h2>
-          {timeline.length === 0 ? (
+          {sync.pending.length > 0 && (
+            <ul className="mb-2 space-y-2">
+              {[...sync.pending].reverse().map((q) => (
+                <li key={q.id} className="flex items-center gap-3 rounded-2xl border border-dashed border-white/20 px-4 py-3">
+                  <Clock className="size-4 shrink-0 text-amber-300" />
+                  <div className="min-w-0 flex-1 text-sm">
+                    {q.kind === 'reaction' ? `${REACTIONS.find((r) => r.value === q.data.reaction)?.label ?? 'Reaction'} · ${String(q.data.feature)}`
+                      : q.kind === 'note' ? String(q.data.content)
+                      : q.kind === 'photo' ? `Photo · ${q.data.roomType ?? 'Other'}`
+                      : 'Audio recording'}
+                    <div className="text-xs text-slate-400">{q.attempts >= 5 ? "Couldn't sync — will keep trying on reload" : 'Saved on this phone · waiting to sync'}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {timeline.length === 0 && sync.pending.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-slate-400">
               Tap a reaction, add a note or snap a photo. Everything saves instantly.
             </p>
@@ -173,6 +201,8 @@ function ShowingMode({ showing }: { showing: ShowingDetail }) {
       />
       <EndSheet
         showing={showing}
+        pending={sync.pending.length}
+        online={sync.online}
         open={sheet?.kind === 'end'}
         onClose={() => setSheet(null)}
         beforeEnd={async () => {
@@ -259,7 +289,21 @@ function ReactionSheet({ showing, sheet, onClose }: { showing: ShowingDetail; sh
     if (sheet?.kind === 'reaction') setReaction(sheet.reaction)
   }, [sheet])
 
+  async function saveOffline(feature: string) {
+    await enqueue({
+      kind: 'reaction',
+      showingId: showing.id,
+      data: {
+        showing_id: showing.id, client_id: showing.client_id, property_id: showing.property_id, feature, reaction,
+        sentiment: SENTIMENT[reaction], strength: STRENGTH[reaction], client_member_id: memberId, source: 'realtor',
+      },
+    })
+    toast(`Saved on this phone · ${feature}`, { duration: 1500 })
+    onClose()
+  }
+
   function pick(feature: string) {
+    if (!navigator.onLine) return void saveOffline(feature)
     add.mutate(
       { reaction, feature, client_member_id: memberId },
       {
@@ -267,7 +311,7 @@ function ReactionSheet({ showing, sheet, onClose }: { showing: ShowingDetail; sh
           toast.success(`${REACTIONS.find((r) => r.value === reaction)?.label} · ${feature}`, { duration: 1500 })
           onClose()
         },
-        onError: (e) => toast.error(`Couldn't save reaction: ${e.message}`),
+        onError: (e) => (isNetworkError(e) ? void saveOffline(feature) : toast.error(`Couldn't save reaction: ${e.message}`)),
       },
     )
   }
@@ -367,10 +411,14 @@ function NoteSheet({ showingId, open, onClose }: { showingId: string; open: bool
 
   function save() {
     if (!text.trim()) return
-    add.mutate(
-      { content: text.trim(), room_type: room || null, note_type: usedVoice ? 'voice' : 'text' },
-      { onSuccess: onClose, onError: (e) => toast.error(`Couldn't save note: ${e.message}`) },
-    )
+    const note = { content: text.trim(), room_type: room || null, note_type: usedVoice ? 'voice' : 'text' }
+    const offline = async () => {
+      await enqueue({ kind: 'note', showingId, data: { ...note, showing_id: showingId } })
+      toast('Note saved on this phone — it will sync automatically.')
+      onClose()
+    }
+    if (!navigator.onLine) return void offline()
+    add.mutate(note, { onSuccess: onClose, onError: (e) => (isNetworkError(e) ? void offline() : toast.error(`Couldn't save note: ${e.message}`)) })
   }
 
   return (
@@ -420,7 +468,16 @@ function PhotoSheet({ showing, file, onClose }: { showing: ShowingDetail; file: 
   async function save() {
     if (!file) return
     setSaving(true)
+    const offline = async () => {
+      await enqueue({
+        kind: 'photo', showingId: showing.id, blob: file, fileName: file.name || 'photo.jpg',
+        data: { propertyId: showing.property_id, roomType: subject || 'Other', caption: caption || null, orgId: organization.id },
+      })
+      toast('Photo saved on this phone — it will upload automatically.')
+      onClose()
+    }
     try {
+      if (!navigator.onLine) return await offline()
       await uploadPropertyPhoto({
         orgId: organization.id,
         propertyId: showing.property_id,
@@ -433,7 +490,8 @@ function PhotoSheet({ showing, file, onClose }: { showing: ShowingDetail; file: 
       qc.invalidateQueries({ queryKey: ['showing', showing.id] })
       onClose()
     } catch (e) {
-      toast.error(`Couldn't upload photo: ${(e as Error).message}`)
+      if (isNetworkError(e)) await offline()
+      else toast.error(`Couldn't upload photo: ${(e as Error).message}`)
     } finally {
       setSaving(false)
     }
@@ -491,7 +549,7 @@ function ConsentSheet({ showing, open, onClose, onConfirmed }: { showing: Showin
   )
 }
 
-function EndSheet({ showing, open, onClose, beforeEnd }: { showing: ShowingDetail; open: boolean; onClose: () => void; beforeEnd: () => Promise<void> }) {
+function EndSheet({ showing, open, onClose, beforeEnd, pending, online }: { showing: ShowingDetail; open: boolean; onClose: () => void; beforeEnd: () => Promise<void>; pending: number; online: boolean }) {
   const navigate = useNavigate()
   const end = useEndShowing({ id: showing.id, tour_id: showing.tour_id, property_id: showing.property_id })
   const count = showing.buyer_reactions.length + showing.showing_notes.length + showing.property_photos.length
@@ -507,8 +565,15 @@ function EndSheet({ showing, open, onClose, beforeEnd }: { showing: ShowingDetai
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent title="End this showing?" description={`${count} item${count === 1 ? '' : 's'} captured. You can still edit notes afterwards.`}>
+        {(pending > 0 || !online) && (
+          <p className="mb-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {online
+              ? `${pending} item${pending === 1 ? ' is' : 's are'} still syncing. Give it a moment, then end the showing.`
+              : `No signal. Everything is saved on this phone${pending ? ` (${pending} item${pending === 1 ? '' : 's'})` : ''} — end the showing once you're back online.`}
+          </p>
+        )}
         <div className="grid gap-2">
-          <Button size="lg" onClick={confirmEnd} loading={end.isPending}>End Showing</Button>
+          <Button size="lg" onClick={confirmEnd} loading={end.isPending} disabled={pending > 0 || !online}>End Showing</Button>
           <Button size="lg" variant="ghost" onClick={onClose}>Keep going</Button>
         </div>
       </DialogContent>
@@ -540,12 +605,19 @@ function useRecorder(showingId: string) {
         stream.getTracks().forEach((t) => t.stop())
         setState('saving')
         setStartedAt(null)
+        const blob = new Blob(chunks.current, { type: rec.mimeType || 'audio/webm' })
+        const durationSeconds = Math.round((Date.now() - began) / 1000)
         try {
-          const blob = new Blob(chunks.current, { type: rec.mimeType || 'audio/webm' })
-          await save.mutateAsync({ orgId: organization.id, blob, durationSeconds: Math.round((Date.now() - began) / 1000) })
+          if (!navigator.onLine) throw new Error('Failed to fetch')
+          await save.mutateAsync({ orgId: organization.id, blob, durationSeconds })
           toast.success('Recording saved')
         } catch (e) {
-          toast.error(`Recording upload failed: ${(e as Error).message}`)
+          if (isNetworkError(e)) {
+            await enqueue({ kind: 'recording', showingId, blob, data: { orgId: organization.id, durationSeconds } })
+            toast('Recording saved on this phone — it will upload automatically.')
+          } else {
+            toast.error(`Recording upload failed: ${(e as Error).message}`)
+          }
         } finally {
           setState('idle')
           stopResolver.current?.()
