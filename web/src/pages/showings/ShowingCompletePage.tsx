@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/ui/empty-state'
 import { ScoreRing } from '@/components/ui/score-ring'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FollowUpEditor } from '@/components/FollowUpEditor'
+import { FubShowingSync } from '@/components/FubSync'
 import { SuggestionRow } from '@/components/SuggestionRow'
 import { toast } from 'sonner'
 import { useGenerateFollowup, type MessageItem } from '@/features/messages'
@@ -250,7 +251,10 @@ function AiResults({ s, onRerun }: { s: ShowingDetail; onRerun: () => void }) {
 
       <div className="flex items-center justify-between text-xs text-muted">
         <span>AI-generated analysis is informational. Verify physical conditions with qualified professionals.</span>
-        <button onClick={onRerun} className="inline-flex shrink-0 items-center gap-1 font-semibold hover:text-foreground"><RefreshCw className="size-3" /> Re-run</button>
+        <span className="flex shrink-0 items-center gap-4">
+          <FubShowingSync showingId={s.id} analyzed={s.ai_status === 'completed'} />
+          <button onClick={onRerun} className="inline-flex shrink-0 items-center gap-1 font-semibold hover:text-foreground"><RefreshCw className="size-3" /> Re-run</button>
+        </span>
       </div>
     </div>
   )

@@ -691,6 +691,104 @@ export type Database = {
           },
         ]
       }
+      integration_connections: {
+        Row: {
+          account_label: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          organization_id: string
+          profile_id: string
+          provider: string
+          secret_id: string | null
+          settings: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_label?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          organization_id: string
+          profile_id: string
+          provider: string
+          secret_id?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_label?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          organization_id?: string
+          profile_id?: string
+          provider?: string
+          secret_id?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_connections_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_links: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          external_id: string
+          id: string
+          organization_id: string
+          provider: string
+          synced_at: string
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          external_id: string
+          id?: string
+          organization_id: string
+          provider: string
+          synced_at?: string
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          external_id?: string
+          id?: string
+          organization_id?: string
+          provider?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           agent_id: string | null
@@ -2092,6 +2190,24 @@ export type Database = {
       get_buyer_invite: { Args: { p_token: string }; Returns: Json }
       get_calendar_token: { Args: never; Returns: string }
       get_team_invite: { Args: { p_token: string }; Returns: Json }
+      integration_delete: {
+        Args: { p_profile: string; p_provider: string }
+        Returns: undefined
+      }
+      integration_save: {
+        Args: {
+          p_label: string
+          p_profile: string
+          p_provider: string
+          p_secret: string
+          p_settings: Json
+        }
+        Returns: string
+      }
+      integration_secret: {
+        Args: { p_profile: string; p_provider: string }
+        Returns: string
+      }
       is_org_manager: { Args: never; Returns: boolean }
       is_org_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }

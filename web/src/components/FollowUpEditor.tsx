@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input, Textarea } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
+import { useCrm, useFubConnection } from '@/features/integrations'
 import { joinDraft, splitDraft, useUpdateMessage, type MessageItem } from '@/features/messages'
 
 /** Edit / Copy / Send later / Save. Keymivo never sends messages automatically. */
 export function FollowUpEditor({ message, open, onOpenChange }: { message: MessageItem | null; open: boolean; onOpenChange: (v: boolean) => void }) {
   const update = useUpdateMessage()
+  const fub = useFubConnection()
+  const crm = useCrm()
   const [subject, setSubject] = React.useState('')
   const [body, setBody] = React.useState('')
   React.useEffect(() => {
@@ -59,6 +62,18 @@ export function FollowUpEditor({ message, open, onOpenChange }: { message: Messa
             )}
             <Button onClick={() => persist('draft', 'Draft saved')} loading={update.isPending}><Save /> Save</Button>
           </div>
+          {fub && (
+            <Button
+              variant="outline"
+              className="w-full"
+              loading={crm.pushMessage.isPending}
+              onClick={() => update.mutate({ id: message.id, content: joinDraft(subject, body) }, {
+                onSuccess: () => crm.pushMessage.mutate(message.id, { onSuccess: () => toast.success('Logged in Follow Up Boss as a note'), onError: (e) => toast.error(e.message) }),
+              })}
+            >
+              Log in Follow Up Boss
+            </Button>
+          )}
           <Button
             variant="accent"
             className="w-full"

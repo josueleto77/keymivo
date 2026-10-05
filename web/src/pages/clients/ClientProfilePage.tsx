@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { BuyerIntelligencePanel } from '@/components/BuyerIntelligencePanel'
+import { FubClientButton } from '@/components/FubSync'
 import { MortgageCalculator } from '@/components/MortgageCalculator'
 import { PortalInviteButton, PortalSharesCard } from '@/components/PortalAccess'
 import { PreferenceManager } from '@/components/PreferenceManager'
@@ -89,6 +90,7 @@ export function ClientProfilePage() {
         </div>
         <div className="flex gap-2">
           <Button variant="accent" onClick={() => setStartOpen(true)}><Play className="fill-current" /> Start Showing</Button>
+          <FubClientButton clientId={client.id} />
           <Button variant="outline" size="icon" asChild aria-label="Edit"><Link to={`/clients/${client.id}/edit`}><Pencil /></Link></Button>
           <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete"><Trash2 /></Button>
         </div>

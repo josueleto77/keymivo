@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { PublicOnly, RequireBuyer, RequireRealtor, RequireSession, RequireSuperAdmin } from '@/components/RouteGuards'
 import { AdminPage } from '@/pages/AdminPage'
+import { IntegrationsPage } from '@/pages/IntegrationsPage'
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignupPage } from '@/pages/auth/AuthPages'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -84,7 +85,7 @@ export default function App() {
           <Route path="offers" element={<ComingSoonPage feature="offers" />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="reports" element={<ComingSoonPage feature="reports" />} />
-          <Route path="integrations" element={<ComingSoonPage feature="integrations" />} />
+          <Route path="integrations" element={<IntegrationsPage />} />
           <Route element={<RequireSuperAdmin />}>
             <Route path="admin" element={<AdminPage />} />
           </Route>
