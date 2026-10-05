@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { CalendarDays, CreditCard, FileSignature, Mail, MapPin, Plug, Users } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
 import { PageHeader } from '@/components/ui/page-header'
 import { useBillingStatus } from '@/features/billing'
-import { useCrm, useFubConnection } from '@/features/integrations'
+import { useCrm, useFubConnection, useGoogle, useGoogleConnection, type GoogleSettings } from '@/features/integrations'
 import { mapsEnabled } from '@/lib/maps'
 
 type State = 'connected' | 'available' | 'setup' | 'soon' | 'error'
@@ -49,6 +49,38 @@ export function IntegrationsPage() {
   const crm = useCrm()
   const [open, setOpen] = React.useState(false)
   const [key, setKey] = React.useState('')
+  const googleConn = useGoogleConnection()
+  const google = useGoogle()
+  const gs = (googleConn?.settings ?? {}) as GoogleSettings
+  const [params, setParams] = useSearchParams()
+
+  // Google sends the Realtor back here after the consent screen.
+  React.useEffect(() => {
+    const g = params.get('google')
+    if (!g) return
+    if (g === 'connected') toast.success('Google connected — Gmail and Calendar are ready.')
+    else if (g === 'partial') toast.warning('Google connected, but some permissions were not allowed. Reconnect and keep every box checked.')
+    else if (g === 'cancelled') toast('Google connection cancelled.')
+    else toast.error('Google connection failed. Please try again.')
+    params.delete('google')
+    setParams(params, { replace: true })
+  }, [params, setParams])
+
+  const googleState = (ok: boolean | undefined): State => (googleConn ? (googleConn.status === 'error' || ok === false ? 'error' : 'connected') : 'available')
+  const googleDetail = (what: string) => googleConn
+    ? <>{googleConn.account_label}{googleConn.last_sync_at ? ` · used ${formatDistanceToNow(new Date(googleConn.last_sync_at), { addSuffix: true })}` : ''}</>
+    : what
+  const googleActions = googleConn ? (
+    <div className="space-y-3">
+      {googleConn.status === 'error' && googleConn.last_error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800">{googleConn.last_error}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" loading={google.connect.isPending} onClick={() => google.connect.mutate(undefined, { onError: (e) => toast.error(e.message) })}>Reconnect</Button>
+        <Button size="sm" variant="ghost" className="text-danger" onClick={() => { if (confirm('Disconnect Google? Gmail sending and Calendar sync stop. Events already created stay in your calendar.')) google.disconnect.mutate(undefined, { onError: (e) => toast.error(e.message) }) }}>Disconnect</Button>
+      </div>
+    </div>
+  ) : (
+    <Button size="sm" loading={google.connect.isPending} onClick={() => google.connect.mutate(undefined, { onError: (e) => toast.error(e.message) })}>Connect Google</Button>
+  )
 
   const fubState: State = fubConn ? (fubConn.status === 'error' ? 'error' : 'connected') : 'available'
   const autoSync = (fubConn?.settings as { auto_sync_showings?: boolean } | null)?.auto_sync_showings ?? true
@@ -82,8 +114,15 @@ export function IntegrationsPage() {
           )}
         </Tile>
 
-        <Tile icon={CalendarDays} name="Google Calendar" state="connected" detail="Tours sync through your private calendar link (also Apple & Outlook).">
-          <Button size="sm" variant="outline" asChild><Link to="/settings">Calendar sync settings</Link></Button>
+        <Tile icon={Mail} name="Gmail" state={googleState(gs.gmail)} detail={googleDetail('Send follow-ups from your own Gmail address, one click from the draft.')}>
+          {googleActions}
+        </Tile>
+
+        <Tile icon={CalendarDays} name="Google Calendar" state={googleState(gs.calendar)} detail={googleDetail('Put tour stops in your Google Calendar with address, time and buyer.')}>
+          <div className="space-y-2">
+            {!googleConn && googleActions}
+            <Button size="sm" variant="outline" asChild><Link to="/settings">Calendar feed for Apple / Outlook</Link></Button>
+          </div>
         </Tile>
 
         <Tile icon={CreditCard} name="Stripe" state={billing.data?.configured ? 'connected' : 'soon'} detail={billing.data?.configured ? `Subscriptions & billing${billing.data.test_mode ? ' · test mode' : ''}` : 'Subscriptions & billing'} />
@@ -94,7 +133,6 @@ export function IntegrationsPage() {
           state={mapsEnabled() ? 'connected' : 'setup'}
           detail={mapsEnabled() ? 'Address autocomplete, property maps, tour routes with drive times and order optimization.' : 'Waiting for the Google Maps API key.'}
         />
-        <Tile icon={Mail} name="Gmail" state="setup" detail="Send follow-ups from your own Gmail and log replies. Waiting for the Google OAuth app setup." />
         <Tile icon={FileSignature} name="DocuSign" state="setup" detail="Send buyer agency agreements for e-signature. Waiting for the DocuSign developer setup." />
         <Tile icon={Plug} name="HubSpot" state="soon" detail="Contacts, notes and tasks sync." />
         <Tile icon={Plug} name="GoHighLevel" state="soon" detail="Contacts, notes and tasks sync." />

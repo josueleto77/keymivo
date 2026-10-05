@@ -59,3 +59,64 @@ export function useIntegrationLink(entityType: string, entityId: string | undefi
       ),
   })
 }
+
+export function useGoogleConnection() {
+  const { data } = useConnections()
+  return data?.find((c) => c.provider === 'google') ?? null
+}
+export type GoogleSettings = { email?: string; gmail?: boolean; calendar?: boolean }
+
+async function googleFn<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('google-oauth', { body })
+  if (error) {
+    let message = error.message
+    if (error instanceof FunctionsHttpError) {
+      const b = await error.context.json().catch(() => null)
+      if (b?.error) message = b.error
+    }
+    throw new Error(message)
+  }
+  return data as T
+}
+
+export function useGoogle() {
+  const qc = useQueryClient()
+  const done = () => {
+    qc.invalidateQueries({ queryKey: ['integrations'] })
+    qc.invalidateQueries({ queryKey: ['google-links'] })
+  }
+  return {
+    /** Redirects the browser to Google's consent screen; Google returns to /integrations. */
+    connect: useMutation({
+      mutationFn: async () => {
+        const { url } = await googleFn<{ url: string }>({ action: 'start' })
+        window.location.assign(url)
+      },
+    }),
+    disconnect: useMutation({ mutationFn: () => googleFn({ action: 'disconnect' }), onSuccess: done }),
+    sendEmail: useMutation({
+      mutationFn: (v: { messageId: string; subject: string; body: string }) =>
+        googleFn<{ to: string }>({ action: 'send_email', message_id: v.messageId, subject: v.subject, body: v.body }),
+      onSettled: () => { done(); qc.invalidateQueries({ queryKey: ['messages'] }) },
+    }),
+    syncTour: useMutation({
+      mutationFn: (tourId: string) => googleFn<{ created: number; updated: number; events: number }>({ action: 'sync_tour', tour_id: tourId }),
+      onSettled: done,
+    }),
+  }
+}
+
+/** Whether a Keymivo tour already has events in Google Calendar. */
+export function useTourInGoogle(tourId: string | undefined, stopIds: string[]) {
+  return useQuery({
+    queryKey: ['google-links', 'tour', tourId, stopIds.join(',')],
+    enabled: !!tourId,
+    queryFn: async () => {
+      const rows = unwrap(
+        await supabase.from('integration_links').select('entity_id, synced_at').eq('provider', 'google')
+          .in('entity_type', ['calendar_tour', 'calendar_stop']).in('entity_id', [tourId!, ...stopIds]),
+      )
+      return rows.length ? rows.map((r) => r.synced_at).sort().at(-1)! : null
+    },
+  })
+}

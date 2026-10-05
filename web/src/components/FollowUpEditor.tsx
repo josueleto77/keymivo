@@ -1,11 +1,11 @@
-import { Clock, Copy, Mail, Save } from 'lucide-react'
+import { Clock, Copy, Mail, Save, Send } from 'lucide-react'
 import * as React from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input, Textarea } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
-import { useCrm, useFubConnection } from '@/features/integrations'
+import { useCrm, useFubConnection, useGoogle, useGoogleConnection, type GoogleSettings } from '@/features/integrations'
 import { joinDraft, splitDraft, useUpdateMessage, type MessageItem } from '@/features/messages'
 
 /** Edit / Copy / Send later / Save. Keymivo never sends messages automatically. */
@@ -13,6 +13,8 @@ export function FollowUpEditor({ message, open, onOpenChange }: { message: Messa
   const update = useUpdateMessage()
   const fub = useFubConnection()
   const crm = useCrm()
+  const googleConn = useGoogleConnection()
+  const google = useGoogle()
   const [subject, setSubject] = React.useState('')
   const [body, setBody] = React.useState('')
   React.useEffect(() => {
@@ -40,6 +42,8 @@ export function FollowUpEditor({ message, open, onOpenChange }: { message: Messa
   }
 
   const email = message.clients?.email
+  const gmailReady = !!googleConn && (googleConn.settings as GoogleSettings | null)?.gmail !== false
+  const emailed = message.channel === 'email' && message.status === 'sent'
   const mailto = email ? `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` : null
 
   return (
@@ -62,6 +66,23 @@ export function FollowUpEditor({ message, open, onOpenChange }: { message: Messa
             )}
             <Button onClick={() => persist('draft', 'Draft saved')} loading={update.isPending}><Save /> Save</Button>
           </div>
+          {gmailReady && (
+            <Button
+              className="w-full"
+              disabled={emailed || !email || !body.trim()}
+              title={!email ? "Add the client's email to send from Gmail" : undefined}
+              loading={google.sendEmail.isPending}
+              onClick={() => {
+                if (!confirm(`Send this email to ${email} from ${googleConn.account_label}?`)) return
+                google.sendEmail.mutate({ messageId: message.id, subject, body }, {
+                  onSuccess: (r) => { toast.success(`Sent to ${r.to} from your Gmail`); onOpenChange(false) },
+                  onError: (e) => toast.error(e.message),
+                })
+              }}
+            >
+              <Send /> {emailed ? 'Sent from Gmail' : 'Send from Gmail'}
+            </Button>
+          )}
           {fub && (
             <Button
               variant="outline"
@@ -86,7 +107,7 @@ export function FollowUpEditor({ message, open, onOpenChange }: { message: Messa
           >
             {message.channel === 'portal' && message.status === 'sent' ? 'Posted to buyer portal' : 'Post to buyer portal'}
           </Button>
-          <p className="text-xs text-muted">"Send later" keeps it in your queue under Messages. Email is always sent by you from your own email; the portal post only appears inside Keymivo.</p>
+          <p className="text-xs text-muted">"Send later" keeps it in your queue under Messages. Email is only sent when you click Send — from your own Gmail or email app; the portal post only appears inside Keymivo.</p>
         </div>
       </DialogContent>
     </Dialog>
