@@ -109,6 +109,18 @@ Stripe webhook endpoint: `https://ymilfkgnbrpmgmxghvqt.supabase.co/functions/v1/
 Subscription columns are only writable by Edge Functions (service role). Trial expiry is derived in
 `web/src/lib/billing.ts`; expired orgs see an upgrade screen, data is never deleted.
 
+## Field-ready features
+
+- **AI listing import** (`extract-listing`): upload an MLS printout/flyer/screenshot on *Add property*; fields are pre-filled
+  for review. Tax/HOA period conversions are computed in code.
+- **Calendar sync** (`calendar`, public, token-guarded): Settings → Calendar sync gives a private ICS link
+  (Google/Apple/Outlook). Tokens live in `calendar_feeds` (RLS, no policies).
+- **Notifications**: `notifications` table filled by DB triggers (buyer rating, offer interest, buyer message, portal join);
+  bell in the app shell, polled every 60 s.
+- **Offline Showing Mode**: captures queue in IndexedDB (`web/src/lib/offlineQueue.ts`) and sync via
+  `web/src/features/offlineSync.ts`; `public/sw.js` caches the app shell.
+- **Teams** (`/settings/team`), **tour summary**, **data export/delete** (`account`), legal drafts (`/terms`, `/privacy`).
+
 ## Demo data
 
 Settings → **Load demo data** (or the onboarding screen) seeds Mike & Sarah Johnson, five
