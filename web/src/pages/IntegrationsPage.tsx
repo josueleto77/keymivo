@@ -13,6 +13,7 @@ import { Field } from '@/components/ui/label'
 import { PageHeader } from '@/components/ui/page-header'
 import { useBillingStatus } from '@/features/billing'
 import { useCrm, useFubConnection } from '@/features/integrations'
+import { mapsEnabled } from '@/lib/maps'
 
 type State = 'connected' | 'available' | 'setup' | 'soon' | 'error'
 const BADGE: Record<State, { label: string; variant: 'success' | 'accent' | 'warning' | 'outline' | 'danger' }> = {
@@ -87,7 +88,12 @@ export function IntegrationsPage() {
 
         <Tile icon={CreditCard} name="Stripe" state={billing.data?.configured ? 'connected' : 'soon'} detail={billing.data?.configured ? `Subscriptions & billing${billing.data.test_mode ? ' · test mode' : ''}` : 'Subscriptions & billing'} />
 
-        <Tile icon={MapPin} name="Google Maps" state="setup" detail="Address autocomplete, property maps and tour routes with drive times. Waiting for the Google Maps API key." />
+        <Tile
+          icon={MapPin}
+          name="Google Maps"
+          state={mapsEnabled() ? 'connected' : 'setup'}
+          detail={mapsEnabled() ? 'Address autocomplete, property maps, tour routes with drive times and order optimization.' : 'Waiting for the Google Maps API key.'}
+        />
         <Tile icon={Mail} name="Gmail" state="setup" detail="Send follow-ups from your own Gmail and log replies. Waiting for the Google OAuth app setup." />
         <Tile icon={FileSignature} name="DocuSign" state="setup" detail="Send buyer agency agreements for e-signature. Waiting for the DocuSign developer setup." />
         <Tile icon={Plug} name="HubSpot" state="soon" detail="Contacts, notes and tasks sync." />

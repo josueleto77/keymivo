@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { ArrowLeft, CalendarPlus, Camera, ExternalLink, Handshake, MapPin, Pencil, Play, Star, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, Camera, Handshake, MapPin, Pencil, Play, Star, Trash2 } from 'lucide-react'
 import * as React from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { HouseholdOpinions } from '@/components/HouseholdOpinions'
 import { MortgageCalculator } from '@/components/MortgageCalculator'
+import { PropertyMap } from '@/components/PropertyMap'
 import { PropertyImage, useSignedUrl } from '@/components/PropertyImage'
 import { StartShowingDialog } from '@/components/StartShowingDialog'
 import { Badge, DemoBadge } from '@/components/ui/badge'
@@ -112,20 +113,7 @@ export function PropertyProfilePage() {
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Location</CardTitle></CardHeader>
               <CardContent>
-                <div className="grid aspect-[4/3] place-items-center rounded-xl bg-subtle text-center text-sm text-muted">
-                  <div className="px-4">
-                    <MapPin className="mx-auto mb-2 size-6" />
-                    Map provider not connected yet.
-                  </div>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.address_line1}, ${p.city}, ${p.state} ${p.zip_code ?? ''}`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-accent"
-                >
-                  Open in Google Maps <ExternalLink className="size-3.5" />
-                </a>
+                <PropertyMap p={p} />
               </CardContent>
             </Card>
           </div>

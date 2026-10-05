@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { ListingImport, type ExtractedListing } from '@/components/ListingImport'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -82,6 +83,7 @@ function PropertyForm({ property }: { property?: Property }) {
   const e = form.formState.errors
 
   const [highlights, setHighlights] = React.useState<string[]>([])
+  const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(null)
   function applyListing(l: ExtractedListing) {
     const cur = form.getValues()
     const pick = (v: string | number | null | undefined, fallback: string) => (v == null || v === '' ? fallback : String(v))
@@ -129,6 +131,8 @@ function PropertyForm({ property }: { property?: Property }) {
       listing_agent_name: v.listing_agent_name || null,
       listing_brokerage: v.listing_brokerage || null,
       status: v.status,
+      // New coordinates when the address was picked from Google; cleared when typed by hand (re-geocoded on view).
+      ...(coords ? { latitude: coords.lat, longitude: coords.lng } : property && property.address_line1 !== v.address_line1 ? { latitude: null, longitude: null } : {}),
     }
     try {
       const saved = property ? await update.mutateAsync(payload) : await create.mutateAsync(payload)
@@ -160,7 +164,18 @@ function PropertyForm({ property }: { property?: Property }) {
           <CardHeader><CardTitle>Address</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-6">
             <Field label="Street address" htmlFor="address_line1" error={e.address_line1?.message} className="sm:col-span-6">
-              <Input id="address_line1" placeholder="24 Main Street" {...form.register('address_line1')} />
+              <AddressAutocomplete
+                id="address_line1"
+                placeholder="Start typing an address…"
+                {...form.register('address_line1', { onChange: () => setCoords(null) })}
+                onResolved={(a) => {
+                  form.setValue('address_line1', a.address_line1 || form.getValues('address_line1'), { shouldValidate: true })
+                  if (a.city) form.setValue('city', a.city, { shouldValidate: true })
+                  if (a.state && (US_STATES as readonly string[]).includes(a.state)) form.setValue('state', a.state)
+                  if (a.zip_code) form.setValue('zip_code', a.zip_code, { shouldValidate: true })
+                  setCoords(a.lat != null && a.lng != null ? { lat: a.lat, lng: a.lng } : null)
+                }}
+              />
             </Field>
             <Field label="City" htmlFor="city" error={e.city?.message} className="sm:col-span-3">
               <Input id="city" {...form.register('city')} />

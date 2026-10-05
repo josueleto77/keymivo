@@ -3,6 +3,7 @@ import { ArrowDown, ArrowLeft, ArrowUp, CalendarPlus, CheckCircle2, FileText, Pl
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PropertyImage } from '@/components/PropertyImage'
+import { TourMap } from '@/components/TourMap'
 import { TourSummary } from '@/components/TourSummary'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -86,6 +87,15 @@ export function TourDetailPage() {
           <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete tour"><Trash2 /></Button>
         </div>
       </div>
+
+      <TourMap
+        stops={stops}
+        onReorder={async (ids) => {
+          // Times stay with their slot; homes move between slots.
+          const slots = stops.map((s) => s.scheduled_time)
+          await Promise.all(ids.map((id, i) => updateStop.mutateAsync({ id, sequence_number: i + 1, scheduled_time: slots[i] ?? null })))
+        }}
+      />
 
       {stops.some((s) => s.status === 'completed') && (
         <TourSummary tourId={tour.id} clientId={tour.client_id} propertyIds={stops.map((s) => s.property_id)} />

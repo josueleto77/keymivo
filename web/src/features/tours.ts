@@ -3,7 +3,7 @@ import { supabase, unwrap } from '@/lib/supabase'
 import type { Insert, Update } from '@/lib/types'
 
 const TOUR_SELECT =
-  '*, clients(id, first_name, last_name), tour_properties(*, properties(id, address_line1, city, state, listing_price, beds, baths, square_feet, primary_photo, is_demo))'
+  '*, clients(id, first_name, last_name), tour_properties(*, properties(id, address_line1, city, state, zip_code, latitude, longitude, listing_price, beds, baths, square_feet, primary_photo, is_demo))'
 
 export function useTours() {
   return useQuery({
