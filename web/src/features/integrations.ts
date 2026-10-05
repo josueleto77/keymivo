@@ -89,7 +89,7 @@ export function useGoogle() {
     /** Redirects the browser to Google's consent screen; Google returns to /integrations. */
     connect: useMutation({
       mutationFn: async () => {
-        const { url } = await googleFn<{ url: string }>({ action: 'start' })
+        const { url } = await googleFn<{ url: string }>({ action: 'start', return_origin: window.location.origin })
         window.location.assign(url)
       },
     }),

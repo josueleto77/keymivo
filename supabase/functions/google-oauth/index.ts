@@ -20,6 +20,9 @@ const CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET') ?? ''
 const REDIRECT_URI = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-oauth/callback`
 const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/calendar.events']
 const SHOWING_MINUTES = 45
+// Where Google sends the Realtor back to (the origin they started from, if it's one of ours).
+const ORIGINS = [APP_URL, 'https://keymivo.vercel.app', 'http://localhost:5173']
+const safeOrigin = (o: unknown) => (typeof o === 'string' && ORIGINS.includes(o) ? o : APP_URL)
 
 class UserError extends Error {
   constructor(message: string, public status = 400) { super(message) }
@@ -35,15 +38,15 @@ async function hmac(data: string) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(CLIENT_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
   return b64url(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))))
 }
-async function signState(profileId: string) {
-  const payload = b64urlText(JSON.stringify({ p: profileId, t: Date.now(), n: crypto.randomUUID() }))
+async function signState(profileId: string, origin: string) {
+  const payload = b64urlText(JSON.stringify({ p: profileId, o: origin, t: Date.now(), n: crypto.randomUUID() }))
   return `${payload}.${await hmac(payload)}`
 }
-async function readState(state: string): Promise<string | null> {
+async function readState(state: string): Promise<{ profileId: string | null; origin: string }> {
   const [payload, sig] = state.split('.')
-  if (!payload || !sig || (await hmac(payload)) !== sig) return null
-  const { p, t } = JSON.parse(fromB64url(payload))
-  return Date.now() - t < 15 * 60_000 ? p : null
+  if (!payload || !sig || (await hmac(payload)) !== sig) return { profileId: null, origin: APP_URL }
+  const { p, o, t } = JSON.parse(fromB64url(payload))
+  return { profileId: Date.now() - t < 15 * 60_000 ? p : null, origin: safeOrigin(o) }
 }
 
 // ── Google token helpers ──
@@ -108,7 +111,7 @@ Deno.serve(async (req) => {
       case 'start': {
         const q = new URLSearchParams({
           client_id: CLIENT_ID, redirect_uri: REDIRECT_URI, response_type: 'code', scope: SCOPES.join(' '),
-          access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: await signState(profile.id),
+          access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: await signState(profile.id, safeOrigin(body.return_origin)),
         })
         if (u.user.email) q.set('login_hint', u.user.email)
         return json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${q}` })
@@ -145,9 +148,9 @@ Deno.serve(async (req) => {
 })
 
 async function callback(url: URL) {
-  const back = (q: string) => Response.redirect(`${APP_URL}/integrations?${q}`, 302)
+  const { profileId, origin } = await readState(url.searchParams.get('state') ?? '').catch(() => ({ profileId: null, origin: APP_URL }))
+  const back = (q: string) => Response.redirect(`${origin}/integrations?${q}`, 302)
   if (url.searchParams.get('error')) return back('google=cancelled')
-  const profileId = await readState(url.searchParams.get('state') ?? '').catch(() => null)
   const code = url.searchParams.get('code')
   if (!profileId || !code) return back('google=error')
 
