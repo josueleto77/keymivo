@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PropertyImage } from '@/components/PropertyImage'
+import { ReportButton } from '@/components/ReportButton'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -136,6 +137,7 @@ function OfferDetail({ offer }: { offer: OfferDetail }) {
             >
               {OFFER_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </NativeSelect>
+            {analysis && <ReportButton kind="offer" id={offer.id} />}
             <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete offer analysis"><Trash2 /></Button>
           </div>
         </div>

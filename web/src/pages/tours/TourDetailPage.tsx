@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { GoogleTourSync } from '@/components/GoogleTourSync'
 import { PropertyImage } from '@/components/PropertyImage'
+import { ReportButton } from '@/components/ReportButton'
 import { TourMap } from '@/components/TourMap'
 import { TourSummary } from '@/components/TourSummary'
 import { Badge, DemoBadge } from '@/components/ui/badge'
@@ -82,6 +83,7 @@ export function TourDetailPage() {
           <NativeSelect aria-label="Tour status" value={tour.status} onChange={(e) => update.mutate({ status: e.target.value })} className="w-auto">
             {TOUR_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </NativeSelect>
+          <ReportButton kind="tour" id={tour.id} />
           <GoogleTourSync tourId={tour.id} stopIds={stops.map((s) => s.id)} />
           <Button variant="outline" asChild>
             <a href={googleCalendarUrl(tour.name, fullName(tour.clients), tour.tour_date, stops)} target="_blank" rel="noreferrer"><CalendarPlus /> Add to calendar</a>

@@ -15,6 +15,7 @@ import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { NewOfferButton, OffersEmpty, OffersList } from '@/components/OffersList'
+import { ReportButton } from '@/components/ReportButton'
 import { EmptyState, ErrorState } from '@/components/ui/empty-state'
 import { Input, NativeSelect } from '@/components/ui/input'
 import { ScorePill } from '@/components/ui/score-ring'
@@ -93,6 +94,7 @@ export function ClientProfilePage() {
         <div className="flex gap-2">
           <Button variant="accent" onClick={() => setStartOpen(true)}><Play className="fill-current" /> Start Showing</Button>
           <FubClientButton clientId={client.id} />
+          <ReportButton kind="journey" id={client.id} label="Summary PDF" />
           <Button variant="outline" size="icon" asChild aria-label="Edit"><Link to={`/clients/${client.id}/edit`}><Pencil /></Link></Button>
           <Button variant="outline" size="icon" onClick={onDelete} aria-label="Delete"><Trash2 /></Button>
         </div>

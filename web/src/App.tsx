@@ -23,9 +23,9 @@ import { BillingPage } from '@/pages/BillingPage'
 import { TeamPage } from '@/pages/TeamPage'
 import { PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { JoinTeamPage } from '@/pages/auth/JoinTeamPage'
-import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { OfferDetailPage } from '@/pages/OfferDetailPage'
 import { OffersPage } from '@/pages/OffersPage'
+import { ReportsPage } from '@/pages/ReportsPage'
 import { PortalJoinPage } from '@/pages/portal/PortalJoinPage'
 import { PortalLayout } from '@/pages/portal/PortalLayout'
 import { PortalCompare, PortalHome, PortalMessages, PortalProperties, PortalTours } from '@/pages/portal/PortalPages'
@@ -87,7 +87,7 @@ export default function App() {
           <Route path="offers" element={<OffersPage />} />
           <Route path="offers/:id" element={<OfferDetailPage />} />
           <Route path="messages" element={<MessagesPage />} />
-          <Route path="reports" element={<ComingSoonPage feature="reports" />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route element={<RequireSuperAdmin />}>
             <Route path="admin" element={<AdminPage />} />
