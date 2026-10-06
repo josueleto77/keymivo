@@ -1,4 +1,4 @@
-import { CalendarDays, GitCompareArrows, Home, LogOut, MessageSquare, Search } from 'lucide-react'
+import { CalendarDays, GitCompareArrows, Handshake, Home, LogOut, MessageSquare, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Logo } from '@/components/brand/Logo'
 import { ErrorState } from '@/components/ui/empty-state'
@@ -18,6 +18,8 @@ const NAV = [
 export function PortalLayout() {
   const { signOut } = useAuth()
   const { data, isLoading, error, refetch } = usePortalData()
+  // Offers appears only once the agent has shared one.
+  const nav = data?.offers?.length ? [...NAV.slice(0, 4), { to: '/portal/offers', label: 'Offers', icon: Handshake }, NAV[4]!] : NAV
 
   return (
     <div className="min-h-dvh">
@@ -25,7 +27,7 @@ export function PortalLayout() {
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           <NavLink to="/portal"><Logo markClassName="size-6" className="[&>span:last-child]:text-lg" /></NavLink>
           <nav className="hidden flex-1 gap-1 md:flex">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
@@ -56,8 +58,8 @@ export function PortalLayout() {
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-5">
-          {NAV.map((n) => (
+        <div className={cn('grid', nav.length > 5 ? 'grid-cols-6' : 'grid-cols-5')}>
+          {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}

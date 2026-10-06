@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PropertyImage } from '@/components/PropertyImage'
 import { ReportButton } from '@/components/ReportButton'
+import { ShareOfferCard } from '@/components/ShareOfferCard'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -224,7 +225,10 @@ function OfferDetail({ offer }: { offer: OfferDetail }) {
               </CardContent>
             </Card>
           ) : (
-            <AnalysisView analysis={analysis} offer={offer} stale={stale} onChoose={choose} choosing={update.isPending} />
+            <>
+              <ShareOfferCard offer={offer} />
+              <AnalysisView analysis={analysis} offer={offer} stale={stale} onChoose={choose} choosing={update.isPending} />
+            </>
           )}
           <p className="flex gap-2 rounded-xl bg-subtle px-4 py-3 text-xs text-muted"><Info className="size-4 shrink-0" /> {DISCLAIMER}</p>
         </div>

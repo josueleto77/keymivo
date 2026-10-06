@@ -52,7 +52,7 @@ export interface OfferAnalysis {
   data_gaps: string[]
 }
 
-const LIST_SELECT = 'id, status, potential_price, selected_scenario, ai_status, analyzed_at, updated_at, client_id, property_id, clients(id, first_name, last_name, is_demo), properties(id, address_line1, city, state, listing_price, primary_photo, is_demo)'
+const LIST_SELECT = 'id, status, potential_price, selected_scenario, ai_status, analyzed_at, shared_at, updated_at, client_id, property_id, clients(id, first_name, last_name, is_demo), properties(id, address_line1, city, state, listing_price, primary_photo, is_demo)'
 
 export function useOffers(filter?: { clientId?: string; propertyId?: string }) {
   return useQuery({
@@ -144,5 +144,46 @@ export function useAnalyzeOffer(id: string) {
       return data as OfferAnalysis
     },
     onSettled: () => invalidate(qc, id),
+  })
+}
+
+export type BuyerChoice = ScenarioKey | 'not_ready' | 'discuss'
+export const CHOICE_LABEL: Record<BuyerChoice, string> = {
+  conservative: 'Prefers Conservative', competitive: 'Prefers Competitive', strong: 'Prefers Strong',
+  not_ready: 'Not ready yet', discuss: 'Wants to talk',
+}
+
+/** Shares a snapshot of the current analysis to the buyer portal (also posts a portal message). Re-sharing updates it. */
+export function useShareOffer(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (note: string) => unwrap(await supabase.rpc('share_offer_with_buyer', { p_offer: id, p_note: note })),
+    onSuccess: () => { invalidate(qc, id); qc.invalidateQueries({ queryKey: ['messages'] }) },
+  })
+}
+
+export function useUnshareOffer(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => unwrap(await supabase.rpc('unshare_offer', { p_offer: id })),
+    onSuccess: () => invalidate(qc, id),
+  })
+}
+
+export function useOfferResponses(offerId: string | undefined) {
+  return useQuery({
+    queryKey: ['offer-responses', offerId],
+    enabled: !!offerId,
+    queryFn: async () =>
+      unwrap(await supabase.from('offer_responses').select('id, choice, comment, updated_at, client_members(first_name)').eq('offer_id', offerId!).order('updated_at', { ascending: false })),
+  })
+}
+
+/** Which household members can see the portal (have joined) — to tell the Realtor who will see a share. */
+export function usePortalMembers(clientId: string | undefined) {
+  return useQuery({
+    queryKey: ['portal-members', clientId],
+    enabled: !!clientId,
+    queryFn: async () => unwrap(await supabase.from('client_members').select('id, first_name, user_id').eq('client_id', clientId!)),
   })
 }

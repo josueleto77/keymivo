@@ -990,12 +990,77 @@ export type Database = {
           },
         ]
       }
+      offer_responses: {
+        Row: {
+          choice: string
+          client_id: string
+          client_member_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          offer_id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          choice: string
+          client_id: string
+          client_member_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          offer_id: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          choice?: string
+          client_id?: string
+          client_member_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          offer_id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_responses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_responses_client_member_id_fkey"
+            columns: ["client_member_id"]
+            isOneToOne: false
+            referencedRelation: "client_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_responses_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           agent_id: string | null
           ai_status: string
-          analyzed_at: string | null
           analysis: Json | null
+          analyzed_at: string | null
           client_id: string
           created_at: string
           id: string
@@ -1005,14 +1070,17 @@ export type Database = {
           potential_price: number | null
           property_id: string
           selected_scenario: string | null
+          share_note: string | null
+          shared_analysis: Json | null
+          shared_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
           agent_id?: string | null
           ai_status?: string
-          analyzed_at?: string | null
           analysis?: Json | null
+          analyzed_at?: string | null
           client_id: string
           created_at?: string
           id?: string
@@ -1022,14 +1090,17 @@ export type Database = {
           potential_price?: number | null
           property_id: string
           selected_scenario?: string | null
+          share_note?: string | null
+          shared_analysis?: Json | null
+          shared_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           agent_id?: string | null
           ai_status?: string
-          analyzed_at?: string | null
           analysis?: Json | null
+          analyzed_at?: string | null
           client_id?: string
           created_at?: string
           id?: string
@@ -1039,6 +1110,9 @@ export type Database = {
           potential_price?: number | null
           property_id?: string
           selected_scenario?: string | null
+          share_note?: string | null
+          shared_analysis?: Json | null
+          shared_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -2248,6 +2322,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      portal_respond_offer: {
+        Args: { p_choice: string; p_comment: string; p_offer: string }
+        Returns: undefined
+      }
       portal_send_message: { Args: { p_content: string }; Returns: undefined }
       remove_demo_data: { Args: never; Returns: undefined }
       remove_team_member: { Args: { p_profile_id: string }; Returns: undefined }
@@ -2258,6 +2336,11 @@ export type Database = {
         Args: { p_profile_id: string; p_role: string }
         Returns: undefined
       }
+      share_offer_with_buyer: {
+        Args: { p_note: string; p_offer: string }
+        Returns: string
+      }
+      unshare_offer: { Args: { p_offer: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

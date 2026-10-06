@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase, unwrap } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
-const ICON = { buyer_rating: Star, offer_interest: Handshake, buyer_message: MessageSquare, portal_joined: UserCheck } as const
+const ICON = { buyer_rating: Star, offer_interest: Handshake, offer_response: Handshake, buyer_message: MessageSquare, portal_joined: UserCheck } as const
 
 export function NotificationBell({ className }: { className?: string }) {
   const qc = useQueryClient()
@@ -61,7 +61,7 @@ export function NotificationBell({ className }: { className?: string }) {
                     }}
                     className={cn('flex cursor-pointer gap-3 border-b px-4 py-3 outline-none last:border-0 data-[highlighted]:bg-subtle', !n.read_at && 'bg-blue-50/50')}
                   >
-                    <div className={cn('grid size-8 shrink-0 place-items-center rounded-full', n.kind === 'offer_interest' ? 'bg-green-50 text-success' : 'bg-blue-50 text-accent')}>
+                    <div className={cn('grid size-8 shrink-0 place-items-center rounded-full', ['offer_interest', 'offer_response'].includes(n.kind) ? 'bg-green-50 text-success' : 'bg-blue-50 text-accent')}>
                       <Icon className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">

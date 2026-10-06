@@ -47,6 +47,18 @@ export function PortalHome() {
         </p>
       </div>
 
+      {data.offers.filter((o) => !o.responses.some((r) => r.member_id === data.me.member_id)).slice(0, 1).map((o) => (
+        <Card key={o.id} className="border-blue-200 bg-blue-50/50">
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Send className="size-5 shrink-0 text-accent" />
+            <p className="flex-1 text-sm">
+              <b>{data.agent.first_name ?? 'Your agent'} shared an offer strategy for {o.address_line1}.</b> Compare the options and say which one you prefer.
+            </p>
+            <Button asChild size="sm"><Link to={`/portal/offers/${o.id}`}>See the options</Link></Button>
+          </CardContent>
+        </Card>
+      ))}
+
       {toRate.length > 0 && (
         <Card className="border-blue-200 bg-blue-50/50">
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">

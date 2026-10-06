@@ -31,6 +31,7 @@ export function OffersList({ offers, show = 'both' }: { offers: OfferListItem[];
             <PropertyImage path={o.properties?.primary_photo} seed={o.property_id} className="h-28">
               <div className="absolute left-3 top-3 flex gap-1.5">
                 <OfferStatusBadge status={o.status} />
+                {o.shared_at && <Badge variant="accent">Shared</Badge>}
                 {o.properties?.is_demo && <DemoBadge />}
               </div>
             </PropertyImage>

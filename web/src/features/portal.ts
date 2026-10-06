@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase, unwrap } from '@/lib/supabase'
+import type { BuyerChoice, OfferAnalysis } from '@/features/offers'
 import type { Insert } from '@/lib/types'
 
 // ── Buyer side (all reads/writes go through SECURITY DEFINER RPCs) ──
@@ -47,6 +48,22 @@ export interface PortalData {
   properties: PortalProperty[]
   tours: { id: string; name: string; tour_date: string; status: string; stops: { property_id: string; scheduled_time: string | null; sequence_number: number; status: string }[] }[]
   messages: { id: string; content: string; sender: 'agent' | 'buyer'; created_at: string }[]
+  offers: PortalOffer[]
+}
+/** A shared offer strategy: a snapshot of the analysis the Realtor approved (no internal notes). */
+export interface PortalOffer {
+  id: string
+  property_id: string
+  status: string
+  shared_at: string
+  note: string | null
+  address_line1: string
+  city: string
+  state: string
+  listing_price: number | null
+  primary_photo: string | null
+  analysis: Omit<OfferAnalysis, 'data_gaps'>
+  responses: { member_id: string; choice: BuyerChoice; comment: string | null; updated_at: string }[]
 }
 
 export function usePortalData() {
@@ -89,6 +106,15 @@ export function useSendPortalMessage() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (content: string) => unwrap(await supabase.rpc('portal_send_message', { p_content: content })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['portal'] }),
+  })
+}
+
+export function useRespondOffer() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (v: { offerId: string; choice: BuyerChoice; comment: string }) =>
+      unwrap(await supabase.rpc('portal_respond_offer', { p_offer: v.offerId, p_choice: v.choice, p_comment: v.comment })),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['portal'] }),
   })
 }

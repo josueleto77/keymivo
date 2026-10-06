@@ -30,6 +30,7 @@ import { PortalJoinPage } from '@/pages/portal/PortalJoinPage'
 import { PortalLayout } from '@/pages/portal/PortalLayout'
 import { PortalCompare, PortalHome, PortalMessages, PortalProperties, PortalTours } from '@/pages/portal/PortalPages'
 import { PortalPropertyPage } from '@/pages/portal/PortalPropertyPage'
+import { PortalOfferPage, PortalOffers } from '@/pages/portal/PortalOffers'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ComparePage } from '@/pages/ComparePage'
 import { MessagesPage } from '@/pages/MessagesPage'
@@ -59,6 +60,8 @@ export default function App() {
           <Route path="tours" element={<PortalTours />} />
           <Route path="compare" element={<PortalCompare />} />
           <Route path="messages" element={<PortalMessages />} />
+          <Route path="offers" element={<PortalOffers />} />
+          <Route path="offers/:id" element={<PortalOfferPage />} />
         </Route>
       </Route>
 
