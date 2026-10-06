@@ -133,6 +133,12 @@ Rules:
 - Use the buyer's preferences, showing feedback and concerns as evidence where relevant.
 - recommended_scenario must be one the buyer can afford if any can; explain why in plain language.
 - data_gaps lists missing inputs that would make the analysis more reliable (e.g. no comps provided).
+- Definitions: appraisal_gap = how far the price is ABOVE the high end of the comps range (the cash the buyer may
+  need if the appraisal comes in at comps). It has nothing to do with the asking price. If no comps were entered,
+  appraisal-gap exposure is unknown — say so instead of claiming there is no risk.
+- down_payment in the scenarios is what the Realtor entered for this analysis (or the buyer's file, or 20% assumed —
+  see pricing_basis.down_payment_source). If it differs from the buyer's file, mention it once, not in every scenario.
+- Keep each list to the 2-4 most useful points; do not repeat the same point across scenarios.
 Return JSON only, matching the schema.`
 
 const list = { type: 'array', items: { type: 'string' } }
