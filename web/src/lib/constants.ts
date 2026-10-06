@@ -94,3 +94,13 @@ export const US_STATES = [
 export function labelFor<T extends { value: string; label: string }>(list: readonly T[], value: string | null | undefined) {
   return list.find((x) => x.value === value)?.label ?? value ?? '—'
 }
+
+export const OFFER_STATUSES = [
+  { value: 'considering', label: 'Considering', tone: 'outline' },
+  { value: 'preparing', label: 'Preparing', tone: 'accent' },
+  { value: 'submitted', label: 'Submitted', tone: 'warning' },
+  { value: 'accepted', label: 'Accepted', tone: 'success' },
+  { value: 'rejected', label: 'Rejected', tone: 'danger' },
+  { value: 'withdrawn', label: 'Withdrawn', tone: 'outline' },
+] as const
+export type OfferStatus = (typeof OFFER_STATUSES)[number]['value']

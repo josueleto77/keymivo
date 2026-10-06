@@ -24,6 +24,8 @@ import { TeamPage } from '@/pages/TeamPage'
 import { PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { JoinTeamPage } from '@/pages/auth/JoinTeamPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
+import { OfferDetailPage } from '@/pages/OfferDetailPage'
+import { OffersPage } from '@/pages/OffersPage'
 import { PortalJoinPage } from '@/pages/portal/PortalJoinPage'
 import { PortalLayout } from '@/pages/portal/PortalLayout'
 import { PortalCompare, PortalHome, PortalMessages, PortalProperties, PortalTours } from '@/pages/portal/PortalPages'
@@ -82,7 +84,8 @@ export default function App() {
           <Route path="settings/billing" element={<BillingPage />} />
           <Route path="settings/team" element={<TeamPage />} />
           <Route path="compare" element={<ComparePage />} />
-          <Route path="offers" element={<ComingSoonPage feature="offers" />} />
+          <Route path="offers" element={<OffersPage />} />
+          <Route path="offers/:id" element={<OfferDetailPage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="reports" element={<ComingSoonPage feature="reports" />} />
           <Route path="integrations" element={<IntegrationsPage />} />

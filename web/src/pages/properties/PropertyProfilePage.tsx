@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { ArrowLeft, CalendarPlus, Camera, Handshake, MapPin, Pencil, Play, Star, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, Camera, MapPin, Pencil, Play, Star, Trash2 } from 'lucide-react'
 import * as React from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,6 +12,7 @@ import { StartShowingDialog } from '@/components/StartShowingDialog'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { NewOfferButton, OffersEmpty, OffersList } from '@/components/OffersList'
 import { EmptyState, ErrorState } from '@/components/ui/empty-state'
 import { Input, NativeSelect } from '@/components/ui/input'
 import { ScoreRing } from '@/components/ui/score-ring'
@@ -24,6 +25,7 @@ import { supabase, unwrap } from '@/lib/supabase'
 import type { Insert, PropertyPhoto } from '@/lib/types'
 import { cn, formatNumber, formatPrice, fullName, pricePerSqft, scoreLabel, scoreTone } from '@/lib/utils'
 import { useSession } from '@/providers/AuthProvider'
+import { useOffers } from '@/features/offers'
 
 type PropertyDetail = NonNullable<ReturnType<typeof useProperty>['data']>
 
@@ -170,7 +172,7 @@ export function PropertyProfilePage() {
         <TabsContent value="property-intel"><PropertyIntel propertyId={p.id} /></TabsContent>
         <TabsContent value="photos"><Photos p={p} /></TabsContent>
         <TabsContent value="offers">
-          <EmptyState icon={Handshake} title="No offers yet" description="Offer analysis arrives in a later build phase." />
+          <OffersTab propertyId={p.id} />
         </TabsContent>
       </Tabs>
 
@@ -396,5 +398,17 @@ function PropertyHousehold({ propertyId, clientId }: { propertyId: string; clien
       title="Buyer portal ratings"
       ratings={data.map((r) => ({ ...r, name: r.client_members?.first_name ?? 'Buyer' }))}
     />
+  )
+}
+
+function OffersTab({ clientId, propertyId }: { clientId?: string; propertyId?: string }) {
+  const offers = useOffers({ clientId, propertyId })
+  if (offers.isLoading) return null
+  if (!offers.data?.length) return <OffersEmpty clientId={clientId} propertyId={propertyId} />
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end"><NewOfferButton clientId={clientId} propertyId={propertyId} variant="outline" /></div>
+      <OffersList offers={offers.data} show={propertyId ? 'client' : 'property'} />
+    </div>
   )
 }

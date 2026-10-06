@@ -1,5 +1,5 @@
 import { format, formatDistanceToNow } from 'date-fns'
-import { ArrowLeft, CalendarPlus, GitCompareArrows, Handshake, Pencil, Play, Plus, Trash2, X } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, GitCompareArrows, Pencil, Play, Plus, Trash2, X } from 'lucide-react'
 import * as React from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ import { InitialsAvatar } from '@/components/ui/avatar'
 import { Badge, DemoBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { NewOfferButton, OffersEmpty, OffersList } from '@/components/OffersList'
 import { EmptyState, ErrorState } from '@/components/ui/empty-state'
 import { Input, NativeSelect } from '@/components/ui/input'
 import { ScorePill } from '@/components/ui/score-ring'
@@ -28,6 +29,7 @@ import { useTours } from '@/features/tours'
 import { CLIENT_STATUSES, LOAN_TYPES, PREAPPROVAL_STATUSES, REACTIONS, labelFor } from '@/lib/constants'
 import { groupPreferences } from '@/lib/preferences'
 import { cn, formatBudget, formatPrice, fullName, parseDateOnly } from '@/lib/utils'
+import { useOffers } from '@/features/offers'
 
 export function ClientProfilePage() {
   const { id } = useParams()
@@ -193,7 +195,7 @@ export function ClientProfilePage() {
         </TabsContent>
 
         <TabsContent value="offers">
-          <EmptyState icon={Handshake} title="No offer analyses yet" description="Offer analysis (Conservative / Competitive / Strong scenarios) arrives in a later build phase." />
+          <OffersTab clientId={client.id} />
         </TabsContent>
 
         <TabsContent value="activity">
@@ -358,6 +360,18 @@ function LearnedSnippet({ clientId }: { clientId: string }) {
           {data.suggestions.length} preference suggestion{data.suggestions.length === 1 ? '' : 's'} to review in the Intelligence tab.
         </p>
       )}
+    </div>
+  )
+}
+
+function OffersTab({ clientId, propertyId }: { clientId?: string; propertyId?: string }) {
+  const offers = useOffers({ clientId, propertyId })
+  if (offers.isLoading) return null
+  if (!offers.data?.length) return <OffersEmpty clientId={clientId} propertyId={propertyId} />
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end"><NewOfferButton clientId={clientId} propertyId={propertyId} variant="outline" /></div>
+      <OffersList offers={offers.data} show={propertyId ? 'client' : 'property'} />
     </div>
   )
 }

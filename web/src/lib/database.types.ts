@@ -993,37 +993,52 @@ export type Database = {
       offers: {
         Row: {
           agent_id: string | null
+          ai_status: string
+          analyzed_at: string | null
           analysis: Json | null
           client_id: string
           created_at: string
           id: string
+          inputs: Json
+          notes: string | null
           organization_id: string
           potential_price: number | null
           property_id: string
+          selected_scenario: string | null
           status: string
           updated_at: string
         }
         Insert: {
           agent_id?: string | null
+          ai_status?: string
+          analyzed_at?: string | null
           analysis?: Json | null
           client_id: string
           created_at?: string
           id?: string
+          inputs?: Json
+          notes?: string | null
           organization_id?: string
           potential_price?: number | null
           property_id: string
+          selected_scenario?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           agent_id?: string | null
+          ai_status?: string
+          analyzed_at?: string | null
           analysis?: Json | null
           client_id?: string
           created_at?: string
           id?: string
+          inputs?: Json
+          notes?: string | null
           organization_id?: string
           potential_price?: number | null
           property_id?: string
+          selected_scenario?: string | null
           status?: string
           updated_at?: string
         }
