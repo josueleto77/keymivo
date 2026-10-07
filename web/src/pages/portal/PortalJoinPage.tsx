@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { MailCheck } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -93,6 +94,27 @@ export function PortalJoinPage() {
     e.preventDefault()
     if (!email || password.length < 8) return toast.error('Enter your email and a password of at least 8 characters.')
     setBusy(true)
+    if (mode === 'signup') {
+      // Invited buyers: the invite link proves the email, so the account is created already confirmed.
+      const { data, error } = await supabase.functions.invoke('portal-signup', { body: { token, email, password } })
+      const body = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : data
+      if (!error) {
+        const { error: signErr } = await supabase.auth.signInWithPassword({ email, password })
+        setBusy(false)
+        if (signErr) toast.error(signErr.message)
+        return // the effect above accepts the invite and opens the portal
+      }
+      if (body?.code === 'exists' || body?.code === 'used') {
+        setBusy(false)
+        setMode('login')
+        return toast.error(body.error)
+      }
+      if (body?.code !== 'email_mismatch') {
+        setBusy(false)
+        return toast.error(body?.error ?? error.message)
+      }
+      // Different email than the invite → regular sign-up with email confirmation.
+    }
     const redirect = `${window.location.origin}/portal/join?token=${token}`
     const res =
       mode === 'signup'
