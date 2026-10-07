@@ -126,7 +126,7 @@ export function PortalJoinPage() {
     >
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Email" htmlFor="pj-email"><Input id="pj-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-        <Field label="Password" htmlFor="pj-pass" hint={mode === 'signup' ? 'At least 8 characters' : undefined}>
+        <Field label={mode === 'signup' ? 'Create a password' : 'Password'} htmlFor="pj-pass" hint={mode === 'signup' ? 'Choose a new password — at least 8 characters' : undefined}>
           <Input id="pj-pass" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
         <Button type="submit" size="lg" className="w-full" loading={busy}>{mode === 'signup' ? 'Create my portal account' : 'Sign in'}</Button>
