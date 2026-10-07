@@ -55,6 +55,11 @@ Deno.serve(async (req) => {
 
     const to = String(body.email ?? member.email ?? '').trim().toLowerCase()
     if (!EMAIL_RE.test(to)) throw new UserError(`Add an email address for ${member.first_name}.`)
+    // A Realtor/staff account can't join as a buyer — catch it before sending a link that won't work.
+    const { data: existing } = await admin.from('profiles').select('role, onboarding_completed').ilike('email', to.replace(/[%_\\]/g, '\\$&')).limit(1).maybeSingle()
+    if (existing && existing.role !== 'buyer' && existing.onboarding_completed) {
+      throw new UserError(`${to} is already a Keymivo agent account. Use a different email for ${member.first_name}.`)
+    }
     if (to !== (member.email ?? '').toLowerCase()) {
       const { error } = await db.from('client_members').update({ email: to }).eq('id', member.id)
       if (error) throw new Error(error.message)
