@@ -18,7 +18,7 @@ interface InvitePreview { member_first_name: string; member_email: string | null
 export function PortalJoinPage() {
   const [params] = useSearchParams()
   const token = params.get('token') ?? ''
-  const { session, initializing, refreshProfile } = useAuth()
+  const { session, initializing, refreshProfile, profile, profileLoading } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = React.useState<'signup' | 'login'>('signup')
   const [email, setEmail] = React.useState('')
@@ -41,9 +41,12 @@ export function PortalJoinPage() {
     if (invite.data?.member_email && !email) setEmail(invite.data.member_email)
   }, [invite.data, email])
 
-  // Once signed in, accept the invite.
+  // Signed in with an agent account (e.g. the Realtor testing their own link): don't try to convert it.
+  const signedInAsAgent = !!session && !!profile && profile.role !== 'buyer' && profile.onboarding_completed
+
+  // Once signed in (as a buyer or a brand-new account), accept the invite.
   React.useEffect(() => {
-    if (!session || !token || accepting.current) return
+    if (!session || !token || accepting.current || profileLoading || signedInAsAgent) return
     accepting.current = true
     supabase.rpc('accept_buyer_invite', { p_token: token }).then(async ({ error }) => {
       if (error) {
@@ -55,15 +58,32 @@ export function PortalJoinPage() {
       toast.success('Welcome to your Keymivo portal')
       navigate('/portal', { replace: true })
     })
-  }, [session, token, refreshProfile, navigate])
+  }, [session, token, refreshProfile, navigate, profileLoading, signedInAsAgent])
+
+  async function switchAccount() {
+    await supabase.auth.signOut()
+    setAcceptError(null)
+    accepting.current = false
+  }
 
   if (!token) return <div className="p-6"><ErrorState message="This link is missing its invite code. Ask your agent for a new link." /></div>
-  if (initializing || invite.isLoading || (session && !acceptError)) return <FullScreenLoader />
+  if (signedInAsAgent) {
+    return (
+      <AuthLayout title="You're signed in as an agent" subtitle={`This invite is for ${invite.data?.member_first_name ?? 'a buyer'}. Agent accounts can't join a buyer portal.`}>
+        <div className="space-y-3 text-sm text-muted">
+          <p>Signed in as <b className="text-foreground">{session!.user.email}</b>. To open the portal as the buyer, sign out here (or open the link in a private window) and create the buyer's account with their own email.</p>
+          <Button className="w-full" onClick={switchAccount}>Sign out and continue as {invite.data?.member_first_name ?? 'the buyer'}</Button>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Back to my dashboard</Button>
+        </div>
+      </AuthLayout>
+    )
+  }
+  if (initializing || invite.isLoading || (session && (profileLoading || !acceptError))) return <FullScreenLoader />
   if (acceptError) {
     return (
       <AuthLayout title="We couldn't open your portal">
         <ErrorState message={acceptError} />
-        <Button variant="outline" className="mt-4 w-full" onClick={() => supabase.auth.signOut()}>Sign out and try another account</Button>
+        <Button variant="outline" className="mt-4 w-full" onClick={switchAccount}>Sign out and try another account</Button>
       </AuthLayout>
     )
   }
