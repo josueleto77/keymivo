@@ -1,55 +1,83 @@
-import { Copy, Link2, Mail, Share2, Trash2 } from 'lucide-react'
+import { Copy, Link2, MessageSquare, Send, Share2, Trash2 } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Input, NativeSelect } from '@/components/ui/input'
+import { Input, NativeSelect, Textarea } from '@/components/ui/input'
+import { Field } from '@/components/ui/label'
 import { useProperties } from '@/features/properties'
-import { inviteUrl, useCreateInvite, usePortalShares, useSharePropertyMutations } from '@/features/portal'
+import { useGoogleConnection } from '@/features/integrations'
+import { inviteUrl, useCreateInvite, usePortalShares, useSendInvite, useSharePropertyMutations } from '@/features/portal'
 import type { ClientMember } from '@/lib/types'
 
-/** Per-member portal status + "Invite" → copyable private link (never auto-emailed). */
+/** Per-member portal status + "Invite": emails the private link from the app (Gmail or Keymivo email), or copy it. */
 export function PortalInviteButton({ member }: { member: Pick<ClientMember, 'id' | 'first_name' | 'email' | 'user_id'> }) {
   const create = useCreateInvite()
+  const send = useSendInvite()
+  const google = useGoogleConnection()
+  const [open, setOpen] = React.useState(false)
+  const [email, setEmail] = React.useState(member.email ?? '')
+  const [note, setNote] = React.useState('')
   const [link, setLink] = React.useState<string | null>(null)
   if (member.user_id) return <Badge variant="success">Portal active</Badge>
 
-  const mailto = link && member.email
-    ? `mailto:${encodeURIComponent(member.email)}?subject=${encodeURIComponent('Your Keymivo home-search portal')}&body=${encodeURIComponent(`Hi ${member.first_name},\n\nHere's your private link to see the homes we're considering, rate them and message me:\n\n${link}\n`)}`
-    : null
+  const gmail = google && (google.settings as { gmail?: boolean } | null)?.gmail !== false ? google.account_label : null
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 
   return (
     <>
-      <Button
-        size="sm"
-        variant="outline"
-        loading={create.isPending}
-        onClick={() => create.mutate(member.id, { onSuccess: (t) => setLink(inviteUrl(t)), onError: (e) => toast.error(e.message) })}
-      >
-        <Link2 /> Invite
+      <Button size="sm" variant="outline" onClick={() => { setEmail(member.email ?? ''); setLink(null); setOpen(true) }}>
+        <Send /> Invite
       </Button>
-      <Dialog open={!!link} onOpenChange={(o) => !o && setLink(null)}>
-        <DialogContent title={`Invite ${member.first_name} to the portal`} description="Send this private link yourself. It expires in 30 days and works for one account.">
-          <div className="space-y-3">
-            <Input readOnly value={link ?? ''} onFocus={(e) => e.target.select()} aria-label="Invite link" />
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={async () => {
-                  try { await navigator.clipboard.writeText(link!); toast.success('Link copied') } catch { toast.error('Copy failed — select the link and copy it.') }
-                }}
-              >
-                <Copy /> Copy link
-              </Button>
-              {mailto ? (
-                <Button variant="outline" asChild><a href={mailto}><Mail /> Open in email</a></Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent title={`Invite ${member.first_name} to the portal`} description="They get a private link to see the homes you share, tours and offer options, rate homes and message you.">
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault()
+              send.mutate({ memberId: member.id, email: email.trim(), note }, {
+                onSuccess: (r) => { toast.success(`Invite sent to ${r.sent_to}`); setOpen(false) },
+                onError: (err) => toast.error(err.message),
+              })
+            }}
+          >
+            <Field label="Email" htmlFor={`inv-email-${member.id}`}>
+              <Input id={`inv-email-${member.id}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="buyer@email.com" />
+            </Field>
+            <Field label="Personal note (optional)" htmlFor={`inv-note-${member.id}`}>
+              <Textarea id={`inv-note-${member.id}`} value={note} onChange={(e) => setNote(e.target.value)} className="min-h-20"
+                placeholder="I set up a private portal for our home search — you'll see the homes I share, our tours and offer options." />
+            </Field>
+            <Button type="submit" className="w-full" loading={send.isPending} disabled={!validEmail}><Send /> Send invite</Button>
+            <p className="text-xs text-muted">
+              {gmail ? <>Sends from your Gmail (<b>{gmail}</b>), so replies come to you.</> : <>Sends by Keymivo email. <Link to="/integrations" className="underline">Connect Gmail</Link> to send it from your own address.</>}
+            </p>
+
+            <div className="border-t pt-3">
+              {link ? (
+                <div className="space-y-2">
+                  <Input readOnly value={link} onFocus={(e) => e.target.select()} aria-label="Invite link" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" variant="outline" onClick={async () => {
+                      try { await navigator.clipboard.writeText(link); toast.success('Link copied') } catch { toast.error('Copy failed — select the link and copy it.') }
+                    }}><Copy /> Copy link</Button>
+                    <Button type="button" variant="outline" asChild>
+                      <a href={`sms:?&body=${encodeURIComponent(`Hi ${member.first_name}, here's your private link to our home search portal: ${link}`)}`}><MessageSquare /> Text it</a>
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <Button variant="outline" disabled title="Add an email for this buyer to use this"><Mail /> Open in email</Button>
+                <button type="button" className="text-sm text-muted underline-offset-2 hover:underline" disabled={create.isPending}
+                  onClick={() => create.mutate(member.id, { onSuccess: (t) => setLink(inviteUrl(t)), onError: (e) => toast.error(e.message) })}>
+                  <Link2 className="mr-1 inline size-4" />Or get the link to send it yourself (text, WhatsApp…)
+                </button>
               )}
             </div>
-            <p className="text-xs text-muted">The buyer sees only homes you share or put on their tours, their tours, household ratings and portal messages — never your private notes or AI analysis.</p>
-          </div>
+            <p className="text-xs text-muted">The link expires in 30 days and works for one account. Buyers never see your private notes or AI analysis.</p>
+          </form>
         </DialogContent>
       </Dialog>
     </>

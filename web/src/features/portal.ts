@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase, unwrap } from '@/lib/supabase'
 import type { BuyerChoice, OfferAnalysis } from '@/features/offers'
 import type { Insert } from '@/lib/types'
@@ -123,6 +124,28 @@ export function useRespondOffer() {
 export function useCreateInvite() {
   return useMutation({
     mutationFn: async (memberId: string) => unwrap(await supabase.rpc('create_buyer_invite', { p_member_id: memberId })) as string,
+  })
+}
+
+/** Emails the invite from the app (Realtor's Gmail if connected, else Keymivo email). Saves the email on the buyer. */
+export function useSendInvite() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (v: { memberId: string; email: string; note: string }) => {
+      const { data, error } = await supabase.functions.invoke('send-invite', {
+        body: { member_id: v.memberId, email: v.email, note: v.note, origin: window.location.origin },
+      })
+      if (error) {
+        let message = error.message
+        if (error instanceof FunctionsHttpError) {
+          const b = await error.context.json().catch(() => null)
+          if (b?.error) message = b.error
+        }
+        throw new Error(message)
+      }
+      return data as { sent_to: string; via: 'gmail' | 'keymivo_email' }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['client'] }); qc.invalidateQueries({ queryKey: ['portal-members'] }) },
   })
 }
 
