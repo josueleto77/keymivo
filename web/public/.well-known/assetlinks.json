@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.keymivo.app",
+      "sha256_cert_fingerprints": [
+        "BF:24:72:AD:87:B4:4C:7B:E2:95:25:8E:98:CB:D3:11:9C:34:0F:CA:13:0B:2A:03:2A:38:43:93:E7:83:02:3E"
+      ]
+    }
+  }
+]

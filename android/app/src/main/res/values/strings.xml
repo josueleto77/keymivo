@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Keymivo</string>
+    <string name="launch_url">https://app.keymivo.com/</string>
+    <string name="file_provider_authority">com.keymivo.app.fileprovider</string>
+    <string name="asset_statements" translatable="false">
+        [{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://app.keymivo.com\" } }]
+    </string>
+</resources>

@@ -126,3 +126,10 @@ Subscription columns are only writable by Edge Functions (service role). Trial e
 Settings → **Load demo data** (or the onboarding screen) seeds Mike & Sarah Johnson, five
 Massachusetts homes with playbook scores, and a Saturday tour. Everything is flagged `is_demo`,
 badged **DEMO** in the UI, and removable from Settings.
+
+## Android (Google Play)
+`android/` is a Trusted Web Activity (package `com.keymivo.app`) that opens https://app.keymivo.com full screen.
+- Build: `cd android && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ./gradlew :app:bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`.
+- Upload key: `~/Documents/keymivo-android-keys/` (keystore + key.properties, **not in git — back it up**). Bump `versionCode` in `app/build.gradle.kts` for every upload.
+- Domain verification: `web/public/.well-known/assetlinks.json`. After the first upload, add Play Console's **App signing key** SHA-256 there too.
+- Store assets: `android/store/` (512 icon, 1024×500 feature graphic).
