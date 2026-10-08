@@ -2,7 +2,7 @@ import type * as React from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/brand/Logo'
 
-const UPDATED = 'October 2, 2026'
+const UPDATED = 'October 8, 2026'
 
 function LegalLayout({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -96,6 +96,18 @@ export function PrivacyPage() {
         <li><b>OpenAI</b> — AI analysis and transcription of showing content you choose to analyze.</li>
         <li><b>Stripe</b> — payments.</li>
         <li><b>Vercel</b> — web hosting.</li>
+        <li><b>Google Maps Platform</b> — address search, maps and drive times for properties and tours.</li>
+        <li><b>Resend</b> — account and invitation emails sent by Keymivo.</li>
+        <li><b>Integrations you connect</b> (Google, Follow Up Boss) — only when you connect them; see below.</li>
+      </ul>
+
+      <h2>3a. Google user data (Gmail and Google Calendar)</h2>
+      <p>If you connect your Google account, Keymivo requests only two permissions: <b>send email on your behalf</b> (gmail.send) and <b>create and edit calendar events</b> (calendar.events), plus your email address to show which account is connected.</p>
+      <ul>
+        <li>We use Gmail only to send messages you explicitly choose to send from Keymivo (for example a follow-up or a buyer invitation), to the recipient you see before sending. We cannot read your inbox.</li>
+        <li>We use Google Calendar only to create or update the events for tours you choose to sync, and to remove events Keymivo created.</li>
+        <li>Your Google access token is stored encrypted and used only by our servers for these actions. You can disconnect at any time in Integrations, which revokes Keymivo's access.</li>
+        <li>Keymivo's use and transfer of information received from Google APIs adheres to the <a className="underline" href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements. We do not use Google user data for advertising, do not sell it, do not transfer it to others except as needed to provide these features, and do not use it to train AI models.</li>
       </ul>
 
       <h2>4. Fair housing</h2>
@@ -105,7 +117,7 @@ export function PrivacyPage() {
       <p>Each organization’s data is isolated from other organizations. Buyers see only what their agent shares with them and their own household’s ratings and messages — never the agent’s private notes or AI analysis. Photos, recordings and documents are stored privately and served through expiring links.</p>
 
       <h2>6. Retention, export and deletion</h2>
-      <p>We keep your data while your account is active. You can export it or permanently delete your account at any time from Settings (Realtors) or the portal home (buyers). Recordings can be deleted individually from a showing. Backups are purged on our provider’s backup cycle.</p>
+      <p>We keep your data while your account is active. You can export it or permanently delete your account at any time from Settings (Realtors) or the portal home (buyers). Recordings can be deleted individually from a showing. Backups are purged within 30 days. See <a className="underline" href="/delete-account">how to delete your account</a>, including if you can no longer sign in.</p>
 
       <h2>7. Security</h2>
       <p>Data is encrypted in transit; access is enforced with row-level security and role-based permissions; secrets are kept server-side.</p>
@@ -114,7 +126,35 @@ export function PrivacyPage() {
       <p>Depending on where you live, you may have rights to access, correct, delete or port your data. Contact us to exercise them.</p>
 
       <h2>9. Contact</h2>
-      <p>Keymivo LLC · [business address] · [privacy email]</p>
+      <p>Keymivo LLC · Massachusetts, USA · <a className="underline" href="mailto:privacy@keymivo.com">privacy@keymivo.com</a></p>
+    </LegalLayout>
+  )
+}
+
+/** Public account-deletion instructions (required by Google Play: reachable without installing the app). */
+export function DeleteAccountPage() {
+  return (
+    <LegalLayout title="Delete your Keymivo account">
+      <p>You can delete your Keymivo account and its data at any time.</p>
+
+      <h2>Realtors and team leaders</h2>
+      <ul>
+        <li>Sign in at <a className="underline" href="https://app.keymivo.com/settings">app.keymivo.com</a> and open <b>Settings</b>.</li>
+        <li>Under <b>Your data</b>, click <b>Delete account</b> and confirm. Optionally click <b>Export data</b> first to download a copy.</li>
+        <li>If you own the organization, this permanently deletes the organization and everything in it: clients, properties, tours, showings, notes, photos, recordings, AI insights and offer analyses. Any subscription is cancelled.</li>
+      </ul>
+
+      <h2>Buyers (portal accounts)</h2>
+      <ul>
+        <li>Sign in to your portal, open <b>Home</b>, and use <b>Delete account</b> under your privacy settings; or ask your agent to remove you.</li>
+        <li>This deletes your login and your ratings and messages in the portal. Your agent keeps their own records about your home search.</li>
+      </ul>
+
+      <h2>Can't sign in?</h2>
+      <p>Email <a className="underline" href="mailto:privacy@keymivo.com?subject=Delete%20my%20Keymivo%20account">privacy@keymivo.com</a> from the address on your account with the subject “Delete my Keymivo account”. We confirm and complete the deletion within 30 days.</p>
+
+      <h2>What we keep</h2>
+      <p>Deleted data is removed from our active systems immediately and from backups within 30 days. We keep billing records (invoices and payment history held by our payment processor) as required by tax law, and minimal security logs for up to 90 days.</p>
     </LegalLayout>
   )
 }

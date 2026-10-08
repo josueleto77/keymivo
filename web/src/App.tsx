@@ -21,7 +21,7 @@ import { TasksPage } from '@/pages/TasksPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { BillingPage } from '@/pages/BillingPage'
 import { TeamPage } from '@/pages/TeamPage'
-import { PrivacyPage, TermsPage } from '@/pages/LegalPages'
+import { DeleteAccountPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { JoinTeamPage } from '@/pages/auth/JoinTeamPage'
 import { OfferDetailPage } from '@/pages/OfferDetailPage'
 import { OffersPage } from '@/pages/OffersPage'
@@ -49,6 +49,7 @@ export default function App() {
       <Route path="/join" element={<JoinTeamPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/delete-account" element={<DeleteAccountPage />} />
       <Route element={<RequireSession />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
       </Route>
