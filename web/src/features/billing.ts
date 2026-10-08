@@ -26,7 +26,7 @@ export function useBillingStatus() {
 /** Redirects to Stripe Checkout / Billing Portal. */
 export function useBillingRedirect() {
   return useMutation({
-    mutationFn: async (v: { action: 'checkout'; plan: 'pro' | 'team' } | { action: 'portal' }) => {
+    mutationFn: async (v: { action: 'checkout' | 'change_plan'; plan: 'pro' | 'team' } | { action: 'portal' }) => {
       const { url } = await call<{ url: string }>(v)
       window.location.assign(url)
     },

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase, unwrap } from '@/lib/supabase'
 
 export const TEAM_ROLES = [
@@ -26,6 +27,24 @@ export function useTeamMutations(orgId: string) {
   const qc = useQueryClient()
   const done = () => qc.invalidateQueries({ queryKey: ['team', orgId] })
   return {
+    /** Emails the invite from the app (Gmail if connected, else Keymivo email). */
+    sendInvite: useMutation({
+      mutationFn: async (v: { role: string; email: string; note: string }) => {
+        const { data, error } = await supabase.functions.invoke('send-invite', {
+          body: { kind: 'team', role: v.role, email: v.email, note: v.note, origin: window.location.origin },
+        })
+        if (error) {
+          let message = error.message
+          if (error instanceof FunctionsHttpError) {
+            const b = await error.context.json().catch(() => null)
+            if (b?.error) message = b.error
+          }
+          throw new Error(message)
+        }
+        return data as { sent_to: string; via: 'gmail' | 'keymivo_email' }
+      },
+      onSettled: done,
+    }),
     invite: useMutation({
       mutationFn: async (v: { role: string; email: string }) =>
         unwrap(await supabase.rpc('create_team_invite', { p_role: v.role, p_email: v.email })) as string,

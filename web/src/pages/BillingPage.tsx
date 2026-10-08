@@ -87,10 +87,10 @@ export function BillingPage() {
                   className="mt-5 w-full"
                   variant={p.id === 'pro' ? 'default' : 'outline'}
                   disabled={current || !status.data?.configured}
-                  loading={redirect.isPending && redirect.variables?.action === 'checkout' && redirect.variables.plan === p.id}
-                  onClick={() => (subscribed ? go({ action: 'portal' }) : go({ action: 'checkout', plan: p.id }))}
+                  loading={redirect.isPending && redirect.variables?.action !== 'portal' && redirect.variables?.plan === p.id}
+                  onClick={() => go({ action: subscribed ? 'change_plan' : 'checkout', plan: p.id })}
                 >
-                  {current ? 'Current plan' : subscribed ? 'Switch plan' : `Choose ${p.name}`}
+                  {current ? 'Current plan' : subscribed ? `Switch to ${p.name}` : `Choose ${p.name}`}
                 </Button>
               </CardContent>
             </Card>

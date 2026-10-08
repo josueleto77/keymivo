@@ -1,4 +1,4 @@
-import { Copy, Link2, Trash2, UserPlus } from 'lucide-react'
+import { Copy, Send, Trash2, UserPlus } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Input, NativeSelect } from '@/components/ui/input'
+import { Input, NativeSelect, Textarea } from '@/components/ui/input'
 import { PageHeader } from '@/components/ui/page-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TEAM_ROLES, teamInviteUrl, useTeam, useTeamMutations } from '@/features/team'
@@ -22,6 +22,7 @@ export function TeamPage() {
   const m = useTeamMutations(organization.id)
   const [role, setRole] = React.useState('realtor')
   const [email, setEmail] = React.useState('')
+  const [note, setNote] = React.useState('')
   const [link, setLink] = React.useState<string | null>(null)
   const isManager = MANAGERS.includes(profile.role)
 
@@ -51,19 +52,31 @@ export function TeamPage() {
           <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="size-4" /> Invite an agent</CardTitle></CardHeader>
           <CardContent>
             <form
-              className="grid gap-2 sm:grid-cols-[1.4fr_1fr_auto]"
+              className="space-y-2"
               onSubmit={(e) => {
                 e.preventDefault()
-                m.invite.mutate({ role, email }, { onSuccess: (t) => { setLink(teamInviteUrl(t)); setEmail('') }, onError: err })
+                m.sendInvite.mutate({ role, email: email.trim(), note }, {
+                  onSuccess: (r) => { toast.success(`Invite sent to ${r.sent_to}`); setEmail(''); setNote('') },
+                  onError: err,
+                })
               }}
             >
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email (optional)" aria-label="Email" />
-              <NativeSelect value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role">
-                {TEAM_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </NativeSelect>
-              <Button type="submit" loading={m.invite.isPending}><Link2 /> Create link</Button>
+              <div className="grid gap-2 sm:grid-cols-[1.4fr_1fr_auto]">
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="agent@email.com" aria-label="Email" />
+                <NativeSelect value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role">
+                  {TEAM_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </NativeSelect>
+                <Button type="submit" loading={m.sendInvite.isPending} disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())}><Send /> Send invite</Button>
+              </div>
+              <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Personal note (optional)" className="min-h-16" aria-label="Personal note" />
             </form>
-            <p className="mt-2 text-xs text-muted">Links expire in 14 days and work once. Send them yourself — nothing is emailed automatically.</p>
+            <p className="mt-2 text-xs text-muted">
+              Sent from your Gmail if it's connected, otherwise from Keymivo. Links expire in 14 days and work once.{' '}
+              <button type="button" className="underline-offset-2 hover:underline" disabled={m.invite.isPending}
+                onClick={() => m.invite.mutate({ role, email: email.trim() }, { onSuccess: (t) => { setLink(teamInviteUrl(t)); setEmail('') }, onError: err })}>
+                Or create a link to send yourself
+              </button>
+            </p>
           </CardContent>
         </Card>
       )}

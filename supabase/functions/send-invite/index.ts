@@ -1,4 +1,5 @@
-// send-invite — emails a buyer their private portal invite straight from the app.
+// send-invite — emails an invite straight from the app: a buyer's private portal link, or (kind: 'team')
+// an agent invite to join the Realtor's organization.
 // Delivery: the Realtor's own Gmail when Google is connected (best deliverability, replies go to them);
 // otherwise Keymivo email via Resend when RESEND_API_KEY + RESEND_FROM are set.
 // The invite token is created through the caller's JWT (RLS + create_buyer_invite checks the org).
@@ -48,6 +49,7 @@ Deno.serve(async (req) => {
     if (!profile?.organization_id || profile.role === 'buyer') throw new UserError('Not allowed', 403)
 
     const body = await req.json().catch(() => ({}))
+    if (body.kind === 'team') return json(await sendTeamInvite(db, profile, u.user.id, body))
     const { data: member } = await db.from('client_members')
       .select('id, first_name, email, user_id, client_id').eq('id', String(body.member_id ?? '')).maybeSingle()
     if (!member) throw new UserError('Buyer not found', 404)
@@ -97,6 +99,46 @@ Deno.serve(async (req) => {
   }
 })
 
+const TEAM_ROLES: Record<string, string> = { realtor: 'an agent', assistant: 'an assistant', team_leader: 'a team leader' }
+
+// deno-lint-ignore no-explicit-any
+async function sendTeamInvite(db: any, profile: any, userId: string, body: any) {
+  const to = String(body.email ?? '').trim().toLowerCase()
+  const role = String(body.role ?? 'realtor')
+  if (!EMAIL_RE.test(to)) throw new UserError('Enter the agent\'s email address.')
+  if (!TEAM_ROLES[role]) throw new UserError('Invalid role')
+  const { data: existing } = await admin.from('profiles').select('role, organization_id').ilike('email', to.replace(/[%_\\]/g, '\\$&')).limit(1).maybeSingle()
+  if (existing?.organization_id === profile.organization_id && existing.role !== 'buyer') throw new UserError(`${to} is already on your team.`)
+  if (existing?.role === 'buyer') throw new UserError(`${to} is a buyer portal account. Use a different email for the agent.`)
+  if (existing?.organization_id) throw new UserError(`${to} already belongs to another Keymivo organization.`)
+
+  // Seat limits and permissions are enforced inside create_team_invite.
+  const { data: token, error } = await db.rpc('create_team_invite', { p_role: role, p_email: to })
+  if (error) throw new UserError(error.message)
+  const { data: org } = await db.from('organizations').select('name').eq('id', profile.organization_id).single()
+  const origin = ORIGINS.includes(String(body.origin)) ? String(body.origin) : APP_URL
+  const link = `${origin}/join?token=${token}`
+  const agentName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Your team leader'
+  const orgName = org?.name ?? 'our team'
+  const note = String(body.note ?? '').trim().slice(0, 1000)
+  const intro = note || `I'd like you to join ${orgName} on Keymivo as ${TEAM_ROLES[role]}. Keymivo is our AI copilot for buyer showings — notes, buyer preferences, tours, offers and reports in one place.`
+  const subject = `${agentName} invited you to join ${orgName} on Keymivo`
+  const text = ['Hi,', '', intro, '', `Join the team: ${link}`, '', 'This link is just for you and expires in 14 days.', '', agentName, orgName].join('\n')
+  const html = emailHtml({ first: '', agentName, note: intro, link, footer: orgName, button: 'Join the team', expires: '14 days' })
+  let via: 'gmail' | 'keymivo_email'
+  try {
+    via = await deliver({ profileId: profile.id, agentName, agentEmail: profile.email, to, toName: to, subject, text, html })
+  } catch (e) {
+    // Don't let an undelivered invite hold a seat.
+    await admin.from('org_invites').update({ revoked_at: new Date().toISOString() }).eq('token', token)
+    throw e
+  }
+  await admin.from('activity_logs').insert({
+    organization_id: profile.organization_id, user_id: userId, action: 'team_invite_sent', entity_type: 'org_invites', metadata: { role, via },
+  })
+  return { sent_to: to, via }
+}
+
 async function deliver(m: { profileId: string; agentName: string; agentEmail: string | null; to: string; toName: string; subject: string; text: string; html: string }): Promise<'gmail' | 'keymivo_email'> {
   // 1) The Realtor's Gmail, if connected with send permission.
   const { data: conn } = await admin.from('integration_connections').select('settings, status').eq('profile_id', m.profileId).eq('provider', 'google').maybeSingle()
@@ -143,7 +185,7 @@ async function sendGmail(m: { profileId: string; to: string; toName: string; sub
 
   const boundary = `kmv_${crypto.randomUUID()}`
   const raw = [
-    `To: ${mimeWord(m.toName)} <${m.to}>`,
+    (m.toName && m.toName !== m.to ? `To: ${mimeWord(m.toName)} <${m.to}>` : `To: ${m.to}`),
     `Subject: ${mimeWord(m.subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -163,7 +205,7 @@ async function sendGmail(m: { profileId: string; to: string; toName: string; sub
   }
 }
 
-function emailHtml(v: { first: string; agentName: string; note: string; link: string; footer: string }) {
+function emailHtml(v: { first: string; agentName: string; note: string; link: string; footer: string; button?: string; expires?: string }) {
   const body = v.note
     ? esc(v.note).replace(/\n/g, '<br>')
     : `I set up a private portal for our home search. You'll see the homes I share with you, our tour schedule and offer options — and you can rate homes and message me there.`
@@ -172,10 +214,10 @@ function emailHtml(v: { first: string; agentName: string; note: string; link: st
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:32px">
 <tr><td style="font-size:20px;font-weight:700;color:#1B5CF6;padding-bottom:20px">Keymivo</td></tr>
 <tr><td style="font-size:16px;line-height:1.55">
-<p style="margin:0 0 14px">Hi ${esc(v.first)},</p>
+<p style="margin:0 0 14px">Hi${v.first ? ` ${esc(v.first)}` : ''},</p>
 <p style="margin:0 0 22px">${body}</p>
-<p style="margin:0 0 22px"><a href="${esc(v.link)}" style="display:inline-block;background:#1B5CF6;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:10px">Open my portal</a></p>
-<p style="margin:0 0 22px;font-size:13px;color:#64748B">This link is just for you and expires in 30 days. If the button doesn't work, paste this into your browser:<br><span style="word-break:break-all">${esc(v.link)}</span></p>
+<p style="margin:0 0 22px"><a href="${esc(v.link)}" style="display:inline-block;background:#1B5CF6;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:10px">${esc(v.button ?? 'Open my portal')}</a></p>
+<p style="margin:0 0 22px;font-size:13px;color:#64748B">This link is just for you and expires in ${v.expires ?? '30 days'}. If the button doesn't work, paste this into your browser:<br><span style="word-break:break-all">${esc(v.link)}</span></p>
 <p style="margin:0;font-weight:600">${esc(v.agentName)}</p>
 ${v.footer ? `<p style="margin:2px 0 0;font-size:13px;color:#64748B">${esc(v.footer)}</p>` : ''}
 </td></tr></table></td></tr></table></body></html>`

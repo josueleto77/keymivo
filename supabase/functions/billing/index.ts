@@ -1,5 +1,5 @@
 // billing — Stripe Checkout / Billing Portal for an organization.
-// Actions: status | checkout | portal. Works without Stripe keys (reports "not configured").
+// Actions: status | checkout | portal | change_plan. Works without Stripe keys (reports "not configured").
 // Secrets: STRIPE_SECRET_KEY, STRIPE_PRICE_PRO, STRIPE_PRICE_TEAM (test-mode keys during development).
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -28,6 +28,13 @@ async function stripe(path: string, params: Record<string, string>) {
     console.error('Stripe error', path, res.status, body?.error?.message)
     throw new Error(body?.error?.message ?? `Stripe request failed (${res.status})`)
   }
+  return body
+}
+
+async function stripeGet(path: string) {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { Authorization: `Bearer ${STRIPE_KEY}` } })
+  const body = await res.json()
+  if (!res.ok) throw new Error(body?.error?.message ?? `Stripe request failed (${res.status})`)
   return body
 }
 
@@ -102,6 +109,29 @@ Deno.serve(async (req) => {
 
     if (action === 'portal') {
       const session = await stripe('billing_portal/sessions', { customer, return_url: `${origin}/settings/billing` })
+      return json({ url: session.url })
+    }
+
+    // Switch an existing subscription (e.g. Pro → Team): opens Stripe's confirm screen for the new price.
+    // Trial days are kept (portal config: continue_trial); the webhook syncs the plan back.
+    if (action === 'change_plan') {
+      const price = PRICES[plan as string]
+      if (!price) return json({ error: 'Unknown plan' }, 400)
+      if (!org.stripe_subscription_id) return json({ error: 'No active subscription to change.' }, 409)
+      const sub = await stripeGet(`subscriptions/${org.stripe_subscription_id}`)
+      const item = sub.items?.data?.[0]
+      if (!item) return json({ error: 'Subscription has no items.' }, 409)
+      if (item.price?.id === price) return json({ error: 'You are already on this plan.' }, 409)
+      const session = await stripe('billing_portal/sessions', {
+        customer,
+        return_url: `${origin}/settings/billing?checkout=success`,
+        'flow_data[type]': 'subscription_update_confirm',
+        'flow_data[subscription_update_confirm][subscription]': sub.id,
+        'flow_data[subscription_update_confirm][items][0][id]': item.id,
+        'flow_data[subscription_update_confirm][items][0][price]': price,
+        'flow_data[after_completion][type]': 'redirect',
+        'flow_data[after_completion][redirect][return_url]': `${origin}/settings/billing?checkout=success`,
+      })
       return json({ url: session.url })
     }
 
