@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Keymivo — The AI copilot for buyer agents</title>
+<meta name="description" content="Keymivo remembers everything between the first showing and the final offer: buyer reactions, AI showing summaries, Buyer Match scores, tours, offer strategy and a private buyer portal." />
+<link rel="canonical" href="https://keymivo.com/" />
+<meta property="og:title" content="Keymivo — From showing to offer in minutes" />
+<meta property="og:description" content="The AI copilot for residential buyer agents." />
+<meta property="og:url" content="https://keymivo.com/" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://keymivo.com/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#0B1220" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #111827; --muted: #64748B; --line: #E2E8F0; --bg: #F8FAFC; --card: #FFFFFF;
+    --brand: #1B5CF6; --brand-dark: #1D4ED8; --navy: #0B1220; --green: #16A34A; --amber: #D97706; --red: #DC2626;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .display { font-family: Outfit, Inter, sans-serif; letter-spacing: -0.02em; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 12px; font-weight: 600; font-size: 15px; transition: background .15s, transform .15s; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-ghost { border: 1px solid var(--line); background: #fff; }
+  .btn-ghost:hover { background: #F1F5F9; }
+  .btn-light { background: #fff; color: var(--navy); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); }
+
+  /* nav */
+  header { position: sticky; top: 0; z-index: 20; background: rgba(248,250,252,.85); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; }
+  header.scrolled { border-bottom-color: var(--line); }
+  .nav { display: flex; align-items: center; gap: 28px; height: 68px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: Outfit, Inter, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+  .nav-links { display: flex; gap: 24px; font-size: 15px; color: var(--muted); font-weight: 500; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .signin { font-weight: 600; font-size: 15px; padding: 0 8px; }
+
+  /* hero */
+  .hero { padding-top: 72px; padding-bottom: 120px; display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
+  .hero h1 { font-size: 60px; line-height: 1.04; margin: 14px 0 18px; }
+  .hero p.lead { font-size: 19px; color: #334155; max-width: 520px; margin: 0 0 28px; }
+  .hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero .note { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+  .mock { position: relative; }
+  .mock .glow { position: absolute; inset: -40px -20px; background: radial-gradient(closest-side, rgba(27,92,246,.18), transparent); z-index: 0; }
+  .card { position: relative; z-index: 1; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 32px -12px rgba(15,23,42,.18); }
+  .mock-main { padding: 22px; }
+  .mock-top { display: flex; align-items: center; gap: 14px; }
+  .house { width: 64px; height: 64px; border-radius: 14px; background: linear-gradient(135deg,#60A5FA,#1B5CF6); display: grid; place-items: center; flex-shrink: 0; }
+  .ring { margin-left: auto; width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--green) 0 92%, #E2E8F0 92% 100%); display: grid; place-items: center; }
+  .ring span { width: 50px; height: 50px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-weight: 700; font-size: 18px; }
+  .addr { font-weight: 700; font-size: 17px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .summary { margin: 16px 0; padding: 12px 14px; border-radius: 12px; background: #EFF6FF; font-size: 14px; color: #1E293B; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 13px; }
+  .cols h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .cols ul { margin: 0; padding-left: 16px; }
+  .cols li { margin: 2px 0; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .mock-float { position: absolute; z-index: 2; right: -24px; bottom: -96px; width: 250px; padding: 14px 16px; }
+  .mock-float .row { display: flex; justify-content: space-between; font-size: 13px; margin-top: 4px; }
+
+  /* sections */
+  section { padding: 72px 0; }
+  .center { text-align: center; }
+  .h2 { font-size: 40px; line-height: 1.12; margin: 10px 0 14px; }
+  .sec-lead { color: var(--muted); font-size: 18px; max-width: 640px; margin: 0 auto; }
+  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 44px; }
+  .step { padding: 22px; }
+  .step .n { width: 32px; height: 32px; border-radius: 10px; background: #EFF6FF; color: var(--brand); font-weight: 700; display: grid; place-items: center; margin-bottom: 14px; }
+  .step h3, .feat h3 { margin: 0 0 6px; font-size: 17px; }
+  .step p, .feat p { margin: 0; color: var(--muted); font-size: 15px; }
+  .features { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 44px; }
+  .feat { padding: 24px; }
+  .ico { width: 40px; height: 40px; border-radius: 12px; background: #F1F5F9; display: grid; place-items: center; margin-bottom: 14px; }
+
+  .band { background: var(--navy); color: #fff; border-radius: 24px; padding: 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .band p { color: #A9B8D6; }
+  .band ul { padding: 0; margin: 18px 0 0; list-style: none; display: grid; gap: 10px; }
+  .band li { display: flex; gap: 10px; color: #E2E8F0; }
+  .check { flex-shrink: 0; margin-top: 3px; }
+  .scen { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .scen .card { padding: 14px; color: var(--ink); }
+  .scen .k { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--muted); }
+  .scen .p { font-family: Outfit, Inter, sans-serif; font-weight: 700; font-size: 22px; margin: 2px 0; }
+  .scen .d { font-size: 12px; color: var(--muted); }
+
+  .trust { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 40px; }
+  .trust .card { padding: 22px; }
+  .trust h3 { margin: 0 0 6px; font-size: 16px; }
+  .trust p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .pricing { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 44px; align-items: stretch; }
+  .plan { padding: 28px; display: flex; flex-direction: column; }
+  .plan.featured { border: 2px solid var(--brand); }
+  .plan .price { font-family: Outfit, Inter, sans-serif; font-size: 44px; font-weight: 700; margin: 10px 0 0; }
+  .plan .per { color: var(--muted); font-size: 15px; }
+  .plan ul { list-style: none; padding: 0; margin: 20px 0 24px; display: grid; gap: 9px; font-size: 15px; flex: 1; }
+  .plan li { display: flex; gap: 10px; }
+  .badge { align-self: flex-start; background: #EFF6FF; color: var(--brand); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+
+  .faq { max-width: 760px; margin: 36px auto 0; }
+  details { border-bottom: 1px solid var(--line); padding: 18px 4px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 22px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details p { color: #475569; margin: 10px 0 0; }
+
+  .final { text-align: center; background: linear-gradient(135deg,#1B3A8A,#0B1220); color: #fff; border-radius: 24px; padding: 64px 24px; }
+  .final p { color: #A9B8D6; font-size: 18px; margin: 0 0 26px; }
+
+  footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+  .foot { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 28px; }
+  .foot nav { display: flex; gap: 18px; flex-wrap: wrap; }
+  .foot a:hover { color: var(--ink); }
+
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; padding-top: 40px; }
+    .mock-float { position: relative; right: auto; bottom: auto; width: auto; max-width: 320px; margin: 14px 0 0 auto; }
+    .hero h1 { font-size: 44px; }
+    .mock { margin: 0 0 24px; }
+    .steps, .trust { grid-template-columns: 1fr 1fr; }
+    .features, .pricing { grid-template-columns: 1fr; }
+    .band { grid-template-columns: 1fr; padding: 32px; }
+    .nav-links { display: none; }
+    .h2 { font-size: 32px; }
+  }
+  @media (max-width: 560px) {
+    .steps, .trust { grid-template-columns: 1fr; }
+    .scen { grid-template-columns: 1fr; }
+    .signin { display: none; }
+    .hero h1 { font-size: 38px; }
+    .mock-float { position: relative; right: auto; bottom: auto; width: auto; margin-top: 12px; }
+    .cols { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header id="top">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="Keymivo home">
+      <svg viewBox="-2 -2 108 104" width="30" height="30" aria-hidden="true"><g fill="#1B5CF6"><path fill-rule="evenodd" d="M7 0h31a5 5 0 0 1 5 5v90a5 5 0 0 1-5 5H7a7 7 0 0 1-7-7V7a7 7 0 0 1 7-7Zm16.5 37a11 11 0 0 0-6 20.2V75h12V57.2a11 11 0 0 0-6-20.2Z"/><path d="M51 28 77 3a10 10 0 0 1 7-3h12a6 6 0 0 1 4.2 10.3L66 44.5a12 12 0 0 1-8.5 3.5H55a4 4 0 0 1-4-4Z"/><path d="M51 56a4 4 0 0 1 4-4h2.5a12 12 0 0 1 8.2 3.3l33.6 31.3A7.7 7.7 0 0 1 94 100H80a10 10 0 0 1-7-3L54 78a10 10 0 0 1-3-7Z"/></g></svg>
+      Keymivo
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="signin" href="https://app.keymivo.com/login">Sign in</a>
+      <a class="btn btn-primary" href="https://app.keymivo.com/signup">Start free trial</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow">The AI copilot for buyer agents</div>
+      <h1 class="display">From showing to offer in minutes.</h1>
+      <p class="lead">Keymivo remembers everything between the first showing and the final offer — what your buyers love, what worries them, and which home is winning.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="https://app.keymivo.com/signup">Start your 14-day free trial</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="note">No credit card required · Built for U.S. buyer agents, starting in Massachusetts</div>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="glow"></div>
+      <div class="card mock-main">
+        <div class="mock-top">
+          <div class="house"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></div>
+          <div>
+            <div class="addr">24 Main Street</div>
+            <div class="sub">Woburn, MA · $699,000 · 3 bd · 2.5 ba</div>
+          </div>
+          <div class="ring"><span>92</span></div>
+        </div>
+        <div class="summary"><b>Showing summary.</b> Mike and Sarah loved the backyard and the kitchen; the location fits their commute. Roof age and property taxes are the main concerns.</div>
+        <div class="cols">
+          <div>
+            <h4 style="color:var(--green)">Loved</h4>
+            <ul><li>Backyard</li><li>Modern kitchen</li><li>Quiet street</li></ul>
+          </div>
+          <div>
+            <h4 style="color:var(--red)">To verify</h4>
+            <ul><li>Roof permit &amp; age</li><li>Basement water history</li><li>Annual tax increase</li></ul>
+          </div>
+        </div>
+        <div style="margin-top:14px;font-size:13px"><span class="pill" style="background:#F0FDF4;color:var(--green)">Offer readiness: HIGH</span> <span class="pill" style="background:#EFF6FF;color:var(--brand)">Next: pull comps</span></div>
+      </div>
+      <div class="card mock-float">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted)">OFFER STRATEGY · COMPETITIVE</div>
+        <div class="display" style="font-size:26px;font-weight:700;margin-top:2px">$699,000</div>
+        <div class="row"><span class="sub">Monthly (est.)</span><b>$4,545</b></div>
+        <div class="row"><span class="sub">Cash to close</span><b>~$157,475</b></div>
+        <div class="row"><span class="sub">Budget fit</span><span class="pill" style="background:#F0FDF4;color:var(--green)">Within</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="how">
+    <div class="wrap center">
+      <div class="eyebrow">How it works</div>
+      <h2 class="h2 display">Every showing makes the next one smarter.</h2>
+      <p class="sec-lead">Capture what happens in the house, let AI organize it, and walk into the offer conversation with the facts.</p>
+      <div class="steps" style="text-align:left">
+        <div class="card step"><div class="n">1</div><h3>Capture</h3><p>Tap reactions, take notes and photos, record (with consent) during the showing — even with no signal.</p></div>
+        <div class="card step"><div class="n">2</div><h3>Analyze</h3><p>AI turns it into a summary, concerns, questions and next steps, plus a Buyer Match score.</p></div>
+        <div class="card step"><div class="n">3</div><h3>Compare</h3><p>See every toured home side by side: match, monthly cost, must-haves and what each buyer felt.</p></div>
+        <div class="card step"><div class="n">4</div><h3>Offer</h3><p>Conservative, Competitive and Strong scenarios with payments, cash to close and risks.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" style="padding-top:24px">
+    <div class="wrap center">
+      <div class="eyebrow">Features</div>
+      <h2 class="h2 display">Everything between the first search and the final offer.</h2>
+      <div class="features" style="text-align:left">
+        <div class="card feat"><div class="ico">🎙️</div><h3>Showing Mode</h3><p>Mobile-first capture for each room and each household member. Works offline and syncs later.</p></div>
+        <div class="card feat"><div class="ico">✨</div><h3>AI showing analysis</h3><p>Summaries, concerns with confidence levels, questions to ask and tasks — in seconds.</p></div>
+        <div class="card feat"><div class="ico">🎯</div><h3>Buyer Match</h3><p>A transparent 0–100 score from your buyer's own must-haves, budget, location and reactions.</p></div>
+        <div class="card feat"><div class="ico">🧠</div><h3>Preference learning</h3><p>Keymivo notices what keeps winning (or losing) your buyers over and suggests updates you approve.</p></div>
+        <div class="card feat"><div class="ico">🗺️</div><h3>Tours &amp; routes</h3><p>Plan tours with drive times, optimize stop order and sync them to Google, Apple or Outlook calendars.</p></div>
+        <div class="card feat"><div class="ico">🤝</div><h3>Offer strategy</h3><p>Three priced scenarios with monthly payment, cash to close, appraisal-gap exposure and budget fit.</p></div>
+        <div class="card feat"><div class="ico">🏠</div><h3>Buyer portal</h3><p>Buyers rate homes, see their tours, compare favorites, message you and pick an offer option.</p></div>
+        <div class="card feat"><div class="ico">📄</div><h3>PDF reports</h3><p>Branded tour summaries, home-search summaries and offer strategies to send in one tap.</p></div>
+        <div class="card feat"><div class="ico">🔌</div><h3>Integrations</h3><p>Follow Up Boss, Gmail, Google Calendar and Google Maps. Follow-ups go out from your own email.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <div class="eyebrow" style="color:#93B4FF">Offer strategy</div>
+          <h2 class="h2 display" style="color:#fff">Numbers you can defend. Explanations your buyers understand.</h2>
+          <p>Prices, payments and cash to close are calculated exactly from your comps and your buyer's financing. The AI explains the trade-offs — it never invents a number or promises a seller will accept.</p>
+          <ul>
+            <li><svg class="check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5"><path d="m5 12 5 5 9-10"/></svg>Share the strategy to the buyer portal and see which option each buyer prefers</li>
+            <li><svg class="check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5"><path d="m5 12 5 5 9-10"/></svg>Flags anything above the preapproval or the buyer's monthly comfort</li>
+            <li><svg class="check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5"><path d="m5 12 5 5 9-10"/></svg>Download a branded PDF to walk through together</li>
+          </ul>
+        </div>
+        <div class="scen" aria-hidden="true">
+          <div class="card"><div class="k">CONSERVATIVE</div><div class="p">$678,000</div><div class="d">−3.0% vs asking</div><div class="d" style="margin-top:8px">$4,402/mo</div></div>
+          <div class="card" style="outline:2px solid #93B4FF"><div class="k">COMPETITIVE</div><div class="p">$699,000</div><div class="d">At asking</div><div class="d" style="margin-top:8px">$4,545/mo</div></div>
+          <div class="card"><div class="k">STRONG</div><div class="p">$713,000</div><div class="d">+2.0% vs asking</div><div class="d" style="margin-top:8px">$4,878/mo</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:24px">
+    <div class="wrap center">
+      <div class="eyebrow">Built for the real estate business</div>
+      <h2 class="h2 display">Responsible by design.</h2>
+      <div class="trust" style="text-align:left">
+        <div class="card"><h3>Fair housing guardrails</h3><p>The AI uses only objective property criteria and never infers or uses protected characteristics.</p></div>
+        <div class="card"><h3>Recording consent</h3><p>Keymivo asks you to confirm every party's consent before recording — required in all-party-consent states like Massachusetts.</p></div>
+        <div class="card"><h3>Private by default</h3><p>Each brokerage's data is isolated. Buyers never see your private notes or AI analysis.</p></div>
+        <div class="card"><h3>Your data, your call</h3><p>Export everything anytime, or delete your account and data permanently.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" style="padding-top:24px">
+    <div class="wrap center">
+      <div class="eyebrow">Pricing</div>
+      <h2 class="h2 display">Simple plans. 14 days free.</h2>
+      <p class="sec-lead">Start with every Pro feature. No credit card required to try it.</p>
+      <div class="pricing" style="text-align:left">
+        <div class="card plan featured">
+          <span class="badge">Most popular</span>
+          <h3 style="margin:14px 0 0;font-size:20px">Pro Realtor</h3>
+          <div class="price">$99<span class="per"> /month</span></div>
+          <ul>
+            <li>✓ Unlimited clients &amp; tours</li><li>✓ AI showing summaries &amp; Buyer Match</li><li>✓ Preference learning</li>
+            <li>✓ Comparisons &amp; financial tools</li><li>✓ Offer strategy &amp; PDF reports</li><li>✓ Buyer portal &amp; AI follow-ups</li>
+          </ul>
+          <a class="btn btn-primary" href="https://app.keymivo.com/signup">Start free trial</a>
+        </div>
+        <div class="card plan">
+          <h3 style="margin:0;font-size:20px">Team</h3>
+          <div class="price">$399<span class="per"> /month</span></div>
+          <div class="per">Up to 5 agents</div>
+          <ul>
+            <li>✓ Everything in Pro</li><li>✓ Invite agents &amp; assistants</li><li>✓ Team management &amp; roles</li><li>✓ Shared workflows</li>
+          </ul>
+          <a class="btn btn-ghost" href="https://app.keymivo.com/signup">Start free trial</a>
+        </div>
+        <div class="card plan">
+          <h3 style="margin:0;font-size:20px">Brokerage</h3>
+          <div class="price" style="font-size:34px;margin-top:16px">Let's talk</div>
+          <div class="per">For whole offices</div>
+          <ul>
+            <li>✓ Unlimited agents</li><li>✓ Volume pricing</li><li>✓ Onboarding for your office</li><li>✓ Priority support</li>
+          </ul>
+          <a class="btn btn-ghost" href="mailto:hello@keymivo.com?subject=Keymivo%20for%20our%20brokerage">Contact us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding-top:24px">
+    <div class="wrap">
+      <div class="center"><div class="eyebrow">FAQ</div><h2 class="h2 display">Questions agents ask</h2></div>
+      <div class="faq">
+        <details><summary>Does Keymivo work on my phone during showings?</summary><p>Yes. Keymivo runs in your phone's browser and as an Android app, and Showing Mode keeps working without signal — notes, reactions, photos and recordings sync when you're back online.</p></details>
+        <details><summary>Is it legal to record showings?</summary><p>It depends on your state. Massachusetts and several other states require the consent of everyone being recorded. Keymivo asks you to confirm consent before each recording; recording is always optional.</p></details>
+        <details><summary>Does the AI decide what my buyers can afford?</summary><p>No. Prices, payments and cash to close are calculated from the numbers you and your buyer provide. The AI explains the results; it gives no lending, legal or appraisal advice and never predicts whether a seller will accept.</p></details>
+        <details><summary>What do my buyers see?</summary><p>Only what you share: homes, their tours, offer options you choose to share, their own household's ratings and messages with you. Never your private notes or AI analysis.</p></details>
+        <details><summary>Does it work with my CRM?</summary><p>Keymivo syncs buyers, showing summaries and tasks to Follow Up Boss, sends follow-ups from your Gmail and puts tours on your calendar. More integrations are on the way.</p></details>
+        <details><summary>Can I cancel anytime?</summary><p>Yes. Plans are month to month and you can cancel from Settings → Billing. You can also export or delete all of your data at any time.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="final">
+        <h2 class="h2 display" style="color:#fff;margin-top:0">Walk into every offer conversation prepared.</h2>
+        <p>Try Keymivo free for 14 days. Set up takes about five minutes.</p>
+        <a class="btn btn-light" href="https://app.keymivo.com/signup">Start your free trial</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>© <span id="y">2026</span> Keymivo LLC · Massachusetts, USA</div>
+    <nav aria-label="Footer">
+      <a href="https://app.keymivo.com/terms">Terms</a>
+      <a href="https://app.keymivo.com/privacy">Privacy</a>
+      <a href="https://app.keymivo.com/delete-account">Delete account</a>
+      <a href="mailto:support@keymivo.com">support@keymivo.com</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear()
+  const h = document.querySelector('header')
+  addEventListener('scroll', () => h.classList.toggle('scrolled', scrollY > 8), { passive: true })
+</script>
+</body>
+</html>

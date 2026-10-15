@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/privacy", "destination": "https://app.keymivo.com/privacy", "permanent": false },
+    { "source": "/terms", "destination": "https://app.keymivo.com/terms", "permanent": false },
+    { "source": "/delete-account", "destination": "https://app.keymivo.com/delete-account", "permanent": false },
+    { "source": "/login", "destination": "https://app.keymivo.com/login", "permanent": false },
+    { "source": "/signup", "destination": "https://app.keymivo.com/signup", "permanent": false }
+  ]
+}
