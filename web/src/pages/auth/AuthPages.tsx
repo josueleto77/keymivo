@@ -99,6 +99,13 @@ export function SignupPage() {
       },
     })
     if (error) return toast.error(error.message)
+    // Supabase hides existing accounts: a repeat signup returns a user with no identities and sends no email.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      return toast.error('This email already has a Keymivo account. Sign in, or use "Forgot password" to reset it.', {
+        action: { label: 'Sign in', onClick: () => navigate('/login') },
+        duration: 10000,
+      })
+    }
     if (data.session) navigate('/onboarding', { replace: true })
     else setSentTo(v.email)
   }
