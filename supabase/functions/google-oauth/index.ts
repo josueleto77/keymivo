@@ -17,7 +17,8 @@ const json = (body: unknown, status = 200) =>
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://app.keymivo.com'
 const CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID') ?? ''
 const CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET') ?? ''
-const REDIRECT_URI = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-oauth/callback`
+// Google redirects to our own domain (app.keymivo.com rewrites it to this function) so every OAuth domain is one we own.
+const REDIRECT_URI = Deno.env.get('GOOGLE_REDIRECT_URI') ?? 'https://app.keymivo.com/oauth/google/callback'
 const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/calendar.events']
 const SHOWING_MINUTES = 45
 // Where Google sends the Realtor back to (the origin they started from, if it's one of ours).

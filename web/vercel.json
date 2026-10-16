@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/oauth/google/callback",
+      "destination": "https://ymilfkgnbrpmgmxghvqt.supabase.co/functions/v1/google-oauth/callback"
+    },
+    {
       "source": "/((?!sw\\.js|assets/|icons/|\\.well-known/|manifest\\.webmanifest|icon\\.svg|favicon\\.svg).*)",
       "destination": "/index.html"
     }
