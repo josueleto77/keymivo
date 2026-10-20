@@ -8,6 +8,7 @@ import { LogoMark, Logo } from '@/components/brand/Logo'
 import { InitialsAvatar } from '@/components/ui/avatar'
 import { NotificationBell } from '@/components/NotificationBell'
 import { StartShowingDialog } from '@/components/StartShowingDialog'
+import { useClients } from '@/features/clients'
 import { accessState, trialDaysLeft } from '@/lib/billing'
 import { UpgradeScreen } from '@/pages/BillingPage'
 import { useAuth, useSession } from '@/providers/AuthProvider'
@@ -41,6 +42,10 @@ export function AppShell() {
   const [startOpen, setStartOpen] = React.useState(false)
   const location = useLocation()
   React.useEffect(() => setMoreOpen(false), [location.pathname])
+  // New page starts at the top (the SPA otherwise keeps the previous scroll position).
+  // Braces matter: newer Chrome returns a Promise from scroll methods, which React would call as a cleanup.
+  React.useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
+  const { data: clients } = useClients()
 
   const access = accessState(organization)
   const daysLeft = trialDaysLeft(organization)
@@ -122,8 +127,9 @@ export function AppShell() {
         </div>
       </main>
 
-      {/* Mobile floating Start Showing — only on list screens; detail pages have their own button and the FAB would cover actions */}
-      {['/', '/clients', '/properties', '/tours'].includes(location.pathname) && (
+      {/* Mobile floating Start Showing — only on list screens; detail pages have their own button and the FAB would cover actions.
+          Hidden until there is a buyer: it would cover the empty-state call to action and the dialog has nothing to pick. */}
+      {['/', '/clients', '/properties', '/tours'].includes(location.pathname) && !!clients?.length && (
       <button
         onClick={() => setStartOpen(true)}
         className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 z-30 flex items-center gap-2 rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 active:scale-95 lg:hidden"

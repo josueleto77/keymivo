@@ -7,6 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 
 const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
+/** `1 home`, `3 homes`. */
+export function plural(n: number, word: string, many = `${word}s`) {
+  return `${n} ${n === 1 ? word : many}`
+}
+
 export function formatPrice(value: number | null | undefined) {
   return value == null ? '—' : usd0.format(value)
 }

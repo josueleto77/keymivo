@@ -1,4 +1,4 @@
-import { addDays, format, nextSaturday } from 'date-fns'
+import { addDays, format, nextSaturday, parseISO } from 'date-fns'
 import { ArrowDown, ArrowLeft, ArrowUp, Plus, X } from 'lucide-react'
 import * as React from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -31,7 +31,8 @@ export function TourFormPage() {
 
   const defaultDate = format(new Date().getDay() === 6 ? addDays(new Date(), 7) : nextSaturday(new Date()), 'yyyy-MM-dd')
   const [clientId, setClientId] = React.useState(params.get('client') ?? '')
-  const [name, setName] = React.useState('Saturday Home Tour')
+  const tourName = (d: string) => (d ? `${format(parseISO(d), 'EEEE')} Home Tour` : 'Home Tour')
+  const [name, setName] = React.useState(() => tourName(defaultDate))
   const [date, setDate] = React.useState(defaultDate)
   const [notes, setNotes] = React.useState('')
   const [stops, setStops] = React.useState<Stop[]>(() => {
@@ -92,7 +93,11 @@ export function TourFormPage() {
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field label="Date" htmlFor="date" error={touched ? errors.date : undefined}>
-              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input id="date" type="date" value={date} onChange={(e) => {
+                // Keep the suggested name in step with the weekday unless the agent typed their own.
+                if (name === tourName(date)) setName(tourName(e.target.value))
+                setDate(e.target.value)
+              }} />
             </Field>
           </CardContent>
         </Card>
@@ -105,20 +110,22 @@ export function TourFormPage() {
             {stops.map((s, i) => {
               const p = properties.data?.find((x) => x.id === s.property_id)
               return (
-                <div key={s.property_id} className="flex items-center gap-2 rounded-xl border p-2.5">
+                <div key={s.property_id} className="flex flex-wrap items-center gap-2 rounded-xl border p-2.5">
                   <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">{i + 1}</span>
+                  {/* On phones the time drops to its own line under the address so the row never overflows. */}
+                  <div className="order-last basis-full sm:hidden" />
                   <Input
                     type="time"
                     value={s.scheduled_time}
                     onChange={(e) => setStops((prev) => prev.map((x, j) => (j === i ? { ...x, scheduled_time: e.target.value } : x)))}
-                    className="h-9 w-[120px] shrink-0"
+                    className="order-last ml-9 h-9 w-[120px] shrink-0 sm:order-none sm:ml-0"
                     aria-label="Time"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{p?.address_line1}</div>
                     <div className="truncate text-xs text-muted">{p?.city} · {formatPrice(p?.listing_price)}</div>
                   </div>
-                  <div className="flex">
+                  <div className="flex shrink-0">
                     <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => move(i, -1)} aria-label="Move up"><ArrowUp /></Button>
                     <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => move(i, 1)} aria-label="Move down"><ArrowDown /></Button>
                     <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => setStops((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove"><X /></Button>

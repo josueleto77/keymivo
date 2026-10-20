@@ -12,12 +12,16 @@ const MODEL = Deno.env.get('OPENAI_MODEL') ?? 'gpt-4.1-mini'
 
 const SYSTEM_PROMPT = `You write follow-up messages from a licensed residential buyer's agent to their buyer client after a home showing.
 Style: warm, professional, concise (90-160 words), plain language, first person from the agent, addressed to the buyer(s) by first name.
-Content: how this home compares with the others toured (ranking language, not raw numbers unless helpful), what the buyers responded
+Content: how this home compares with the others toured (ranking language, not raw numbers unless helpful) — only when ranking is provided;
+if ranking is null this is the first home toured, so do not compare or call it a top/best option. Match your enthusiasm to
+buyer_match (e.g. a "Fair" match is a home with real trade-offs, not a standout). Then what the buyers responded
 to most positively, the main items the agent will investigate (phrase physical issues as things to verify, never as conclusions),
 and one clear next step.
 Rules: never give legal, tax, lending or appraisal advice; never guarantee outcomes or seller acceptance; never mention or infer protected
 characteristics or neighborhood demographics; only use facts present in the context; no emojis; sign with the agent's first name.
 Return JSON only.`
+
+const matchLabel = (n: number | null) => (n == null ? null : n >= 90 ? 'Excellent' : n >= 80 ? 'Strong' : n >= 70 ? 'Good' : n >= 55 ? 'Fair' : 'Weak') // same bands as the app's scoreLabel
 
 const SCHEMA = {
   name: 'followup',
@@ -72,7 +76,9 @@ Deno.serve(async (req) => {
       agent: { first_name: me?.first_name, brokerage: me?.brokerage_name },
       buyers: members.length ? members : [(s.clients as any)?.first_name],
       property: `${(s.properties as any)?.address_line1}, ${(s.properties as any)?.city}`,
-      ranking: rank >= 0 ? { position: rank + 1, of: scores!.length, others: scores!.slice(0, 5).map((x: any) => x.properties?.address_line1) } : null,
+      // Only meaningful with 2+ scored homes; with one home the model would call it "the top option".
+      ranking: rank >= 0 && scores!.length >= 2 ? { position: rank + 1, of: scores!.length, others: scores!.slice(0, 5).map((x: any) => x.properties?.address_line1) } : null,
+      buyer_match: rank >= 0 ? { score: scores![rank]!.overall_score, label: matchLabel(scores![rank]!.overall_score) } : null,
       positives: a.positives ?? (s.buyer_reactions ?? []).filter((r: any) => ['love', 'like'].includes(r.reaction)).map((r: any) => r.feature),
       concerns: (a.concerns ?? []).map((c: any) => c.title),
       questions: a.questions ?? [],

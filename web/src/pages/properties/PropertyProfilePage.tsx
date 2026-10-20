@@ -79,7 +79,7 @@ export function PropertyProfilePage() {
             <span className={cn('font-semibold', scoreTone(score.overall_score))}>Match: {score.overall_score}/100</span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="accent" onClick={() => setStartOpen(true)}><Play className="fill-current" /> Start Showing</Button>
           <Button variant="outline" asChild><Link to={`/tours/new?property=${p.id}`}><CalendarPlus /> Add to Tour</Link></Button>
           <Button variant="outline" size="icon" asChild aria-label="Edit"><Link to={`/properties/${p.id}/edit`}><Pencil /></Link></Button>

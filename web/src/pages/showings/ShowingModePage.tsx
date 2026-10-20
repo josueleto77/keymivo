@@ -428,7 +428,7 @@ function NoteSheet({ showingId, open, onClose }: { showingId: string; open: bool
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={'“Mike loves the kitchen.”  “Ask listing agent about roof.”'}
+            placeholder={'“She loves the kitchen.”  “Ask listing agent about roof.”'}
             className="min-h-[120px] text-base"
             autoFocus
           />

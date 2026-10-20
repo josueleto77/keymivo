@@ -17,7 +17,7 @@ import { useProperties } from '@/features/properties'
 import { useStartShowing } from '@/features/showings'
 import { sortedStops, useAddTourStop, useDeleteTour, useRemoveTourStop, useTour, useUpdateTour, useUpdateTourStop } from '@/features/tours'
 import { TOUR_STATUSES } from '@/lib/constants'
-import { formatNumber, formatPrice, fullName, parseDateOnly } from '@/lib/utils'
+import { formatNumber, formatPrice, fullName, parseDateOnly, plural } from '@/lib/utils'
 
 export function TourDetailPage() {
   const { id } = useParams()
@@ -76,10 +76,10 @@ export function TourDetailPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{tour.name}</h1>
           <p className="mt-1 text-muted">
             <Link to={`/clients/${tour.client_id}`} className="font-medium text-foreground hover:underline">{fullName(tour.clients)}</Link>
-            {' · '}{format(parseDateOnly(tour.tour_date), 'EEEE, MMMM d')} · {stops.length} Homes
+            {' · '}{format(parseDateOnly(tour.tour_date), 'EEEE, MMMM d')} · {plural(stops.length, 'home')}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <NativeSelect aria-label="Tour status" value={tour.status} onChange={(e) => update.mutate({ status: e.target.value })} className="w-auto">
             {TOUR_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </NativeSelect>
@@ -115,9 +115,9 @@ export function TourDetailPage() {
                 <PropertyImage path={p?.primary_photo} seed={s.property_id} className="h-32 sm:h-auto sm:w-48 sm:shrink-0">
                   <span className="absolute left-3 top-3 grid size-7 place-items-center rounded-full bg-primary text-xs font-bold text-white">{i + 1}</span>
                 </PropertyImage>
-                <CardContent className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                <CardContent className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Input
                         key={`${s.id}-${s.scheduled_time}`}
                         type="time"
@@ -133,12 +133,12 @@ export function TourDetailPage() {
                       {s.status === 'showing' && <Badge variant="warning">In progress</Badge>}
                       {p?.is_demo && <DemoBadge />}
                     </div>
-                    <Link to={`/properties/${s.property_id}`} className="mt-2 block text-lg font-semibold hover:underline">{p?.address_line1}</Link>
+                    <Link to={`/properties/${s.property_id}`} className="mt-2 block break-words text-lg font-semibold hover:underline">{p?.address_line1}</Link>
                     <p className="text-sm text-muted">
                       {p?.city}, {p?.state} · {formatPrice(p?.listing_price)} · {p?.beds ?? '—'} bd · {p?.baths ?? '—'} ba · {formatNumber(p?.square_feet)} sqft
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="flex">
                       <Button variant="ghost" size="icon" className="size-8" onClick={() => swap(i, -1)} disabled={i === 0} aria-label="Move up"><ArrowUp /></Button>
                       <Button variant="ghost" size="icon" className="size-8" onClick={() => swap(i, 1)} disabled={i === stops.length - 1} aria-label="Move down"><ArrowDown /></Button>

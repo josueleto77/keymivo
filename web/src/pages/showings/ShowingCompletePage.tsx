@@ -21,7 +21,7 @@ import { splitPhotoUrl } from '@/features/properties'
 import { useDeleteRecording, useShowing, useShowingRecordings, type ShowingDetail } from '@/features/showings'
 import { sortedStops, useTour } from '@/features/tours'
 import { REACTIONS } from '@/lib/constants'
-import { cn, fullName, scoreLabel, scoreTone } from '@/lib/utils'
+import { cn, fullName, plural, scoreLabel, scoreTone } from '@/lib/utils'
 
 const INTEREST_LABEL = { low: 'LOW', medium: 'MEDIUM', high: 'HIGH', very_high: 'VERY HIGH' } as const
 const PROGRESS = ['Analyzing buyer reactions…', 'Finding important concerns…', 'Updating buyer preferences…', 'Building next steps…']
@@ -274,7 +274,7 @@ function CapturedData({ s }: { s: ShowingDetail }) {
       <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-[15px] font-semibold">
         Captured during the showing
         <span className="text-xs font-normal text-muted">
-          {realtorReactions.length} reactions · {s.showing_notes.length} notes · {s.property_photos.length} photos
+          {plural(realtorReactions.length, 'reaction')} · {plural(s.showing_notes.length, 'note')} · {plural(s.property_photos.length, 'photo')}
         </span>
       </summary>
       <div className="space-y-4 border-t px-5 py-4">

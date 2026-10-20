@@ -29,7 +29,7 @@ import { useClientIntelligence } from '@/features/intelligence'
 import { useTours } from '@/features/tours'
 import { CLIENT_STATUSES, LOAN_TYPES, PREAPPROVAL_STATUSES, REACTIONS, labelFor } from '@/lib/constants'
 import { groupPreferences } from '@/lib/preferences'
-import { cn, formatBudget, formatPrice, fullName, parseDateOnly } from '@/lib/utils'
+import { cn, formatBudget, formatPrice, fullName, parseDateOnly, plural } from '@/lib/utils'
 import { useOffers } from '@/features/offers'
 
 export function ClientProfilePage() {
@@ -91,7 +91,7 @@ export function ClientProfilePage() {
             {client.preapproval_amount != null && <span>Preapproval: <b className="text-foreground">{formatPrice(client.preapproval_amount)}</b></span>}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="accent" onClick={() => setStartOpen(true)}><Play className="fill-current" /> Start Showing</Button>
           <FubClientButton clientId={client.id} />
           <ReportButton kind="journey" id={client.id} label="Summary PDF" />
@@ -300,7 +300,7 @@ function ClientTours({ clientId }: { clientId: string }) {
           <Link key={t.id} to={`/tours/${t.id}`} className="flex items-center justify-between rounded-2xl border bg-card p-4 shadow-card hover:shadow-lift">
             <div>
               <div className="font-semibold">{t.name}</div>
-              <div className="text-sm text-muted">{format(parseDateOnly(t.tour_date), 'EEEE, MMMM d')} · {t.tour_properties.length} homes</div>
+              <div className="text-sm text-muted">{format(parseDateOnly(t.tour_date), 'EEEE, MMMM d')} · {plural(t.tour_properties.length, 'home')}</div>
             </div>
             <Badge variant={t.status === 'completed' ? 'success' : 'accent'}>{t.status}</Badge>
           </Link>

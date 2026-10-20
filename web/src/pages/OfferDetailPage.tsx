@@ -129,7 +129,7 @@ function OfferDetail({ offer }: { offer: OfferDetail }) {
               {c?.preferred_monthly_payment ? ` · Comfortable at ${formatPrice(c.preferred_monthly_payment)}/mo` : ''}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <NativeSelect
               aria-label="Offer status"
               value={offer.status}

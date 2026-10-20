@@ -103,6 +103,8 @@ export function priceScenarios(property: any, client: any, inputs: Inputs) {
       cash_to_close_est: Math.round(down + (price * CLOSING_COST_PCT) / 100),
       appraisal_gap: hasComps && price > high! ? price - high! : 0,
       fit, fit_notes: fitNotes,
+      // Signed so the model never has to compare numbers itself (it got "below comfort" backwards).
+      monthly_vs_comfort: comfort == null ? null : monthly.total - comfort,
     }
   })
 
@@ -130,6 +132,8 @@ Rules:
   their lender and attorney (Massachusetts commonly uses an Offer to Purchase followed by a Purchase & Sale).
 - Never mention protected characteristics or neighborhood demographics.
 - Respect the buyer's financial limits: if a scenario is "over", say clearly that it exceeds what is on file.
+- monthly_vs_comfort is the monthly total minus the buyer's comfortable payment: negative means BELOW the comfort level,
+  positive means above it. Only say a scenario exceeds the monthly comfort when it is positive; never contradict fit or fit_notes.
 - Use the buyer's preferences, showing feedback and concerns as evidence where relevant.
 - recommended_scenario must be one the buyer can afford if any can; explain why in plain language.
 - data_gaps lists missing inputs that would make the analysis more reliable (e.g. no comps provided).

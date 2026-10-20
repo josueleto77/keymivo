@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/input'
 import { DECISIONS, useSendPortalMessage, type PortalData, type PortalProperty } from '@/features/portal'
 import { memberScore } from '@/lib/household'
 import { estimateMonthly } from '@/lib/mortgage'
-import { cn, formatBudget, formatNumber, formatPrice, formatTime, parseDateOnly, scoreTone } from '@/lib/utils'
+import { cn, formatBudget, formatNumber, formatPrice, formatTime, parseDateOnly, plural, scoreTone } from '@/lib/utils'
 
 export const usePortal = () => useOutletContext<PortalData>()
 
@@ -125,7 +125,7 @@ function TourBlock({ tour, data }: { tour: PortalData['tours'][number]; data: Po
   return (
     <div>
       <div className="font-semibold">{tour.name}</div>
-      <div className="text-xs text-muted">{format(parseDateOnly(tour.tour_date), 'EEEE, MMMM d')} · {tour.stops.length} homes</div>
+      <div className="text-xs text-muted">{format(parseDateOnly(tour.tour_date), 'EEEE, MMMM d')} · {plural(tour.stops.length, 'home')}</div>
       <ul className="mt-2 space-y-1.5">
         {tour.stops.map((s) => {
           const p = data.properties.find((x) => x.id === s.property_id)
@@ -259,7 +259,7 @@ export function PortalMessages() {
   const send = useSendPortalMessage()
   const [text, setText] = React.useState('')
   const end = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => end.current?.scrollIntoView(), [data.messages.length])
+  React.useEffect(() => { end.current?.scrollIntoView() }, [data.messages.length])
 
   return (
     <div className="mx-auto max-w-2xl">
