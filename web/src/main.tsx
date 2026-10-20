@@ -4,8 +4,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import App from './App'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { installErrorReporting } from './lib/errorReporting'
 import { AuthProvider } from './providers/AuthProvider'
 import './index.css'
+
+installErrorReporting()
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
@@ -16,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
           <Toaster position="top-center" richColors closeButton />
         </AuthProvider>
       </BrowserRouter>

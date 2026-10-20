@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAdminMetrics, type AdminMetrics } from '@/features/admin'
+import { useAdminMetrics, useAppErrors, type AdminMetrics } from '@/features/admin'
 import { cn } from '@/lib/utils'
 
 const usd = (n: number) => `$${n.toLocaleString('en-US')}`
@@ -40,6 +40,8 @@ export function AdminPage() {
           </div>
         ))}
       </div>
+
+      <ErrorsCard />
       <p className="-mt-3 text-xs text-muted">MRR uses list prices (Pro $99, Team $399) for active subscriptions; Stripe remains the source of truth for revenue.</p>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -179,5 +181,55 @@ function SignupBars({ data }: { data: AdminMetrics['signups_by_day'] }) {
         </table>
       </details>
     </div>
+  )
+}
+
+/** In-app monitoring: errors users hit in the last 7 days, grouped by message. */
+function ErrorsCard() {
+  const { data, isLoading } = useAppErrors()
+  const groups = React.useMemo(() => {
+    const m = new Map<string, { message: string; count: number; users: Set<string>; last: string; path: string | null; area: string; stack: string | null; release: string | null }>()
+    for (const e of data ?? []) {
+      const g = m.get(e.message)
+      if (g) {
+        g.count++
+        if (e.user_id) g.users.add(e.user_id)
+      } else {
+        m.set(e.message, { message: e.message, count: 1, users: new Set(e.user_id ? [e.user_id] : []), last: e.created_at, path: e.path, area: e.area, stack: e.stack, release: e.release })
+      }
+    }
+    return [...m.values()].sort((a, b) => b.count - a.count)
+  }, [data])
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Errors · last 7 days</CardTitle>
+        {data && <Badge variant={data.length ? 'warning' : 'success'}>{data.length ? `${data.length} reports` : 'No errors'}</Badge>}
+      </CardHeader>
+      <CardContent>
+        {isLoading ? <Skeleton className="h-16 w-full" /> : !groups.length ? (
+          <p className="text-sm text-muted">No errors reported by users this week.</p>
+        ) : (
+          <ul className="divide-y text-sm">
+            {groups.slice(0, 15).map((g) => (
+              <li key={g.message} className="py-2.5">
+                <details>
+                  <summary className="flex cursor-pointer items-start gap-3">
+                    <span className="mt-0.5 min-w-8 rounded-md bg-red-50 px-1.5 text-center text-xs font-semibold tabular-nums text-red-700">{g.count}</span>
+                    <span className="flex-1 break-words">{g.message}</span>
+                    <span className="shrink-0 text-xs text-muted">{formatDistanceToNow(new Date(g.last), { addSuffix: true })}</span>
+                  </summary>
+                  <div className="ml-11 mt-2 space-y-1 text-xs text-muted">
+                    <div>{g.area} · {g.path ?? '—'} · {g.users.size} user{g.users.size === 1 ? '' : 's'} · build {g.release ?? '—'}</div>
+                    {g.stack && <pre className="max-h-48 overflow-auto rounded-lg bg-subtle p-2 text-[11px] leading-snug">{g.stack}</pre>}
+                  </div>
+                </details>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   )
 }

@@ -27,3 +27,16 @@ export function useAdminMetrics() {
     queryFn: async () => unwrap(await supabase.rpc('admin_metrics')) as unknown as AdminMetrics,
   })
 }
+
+export function useAppErrors() {
+  return useQuery({
+    queryKey: ['admin', 'errors'],
+    queryFn: async () =>
+      unwrap(
+        await supabase.from('app_errors')
+          .select('id, created_at, user_id, area, kind, message, stack, path, release')
+          .gte('created_at', new Date(Date.now() - 7 * 86_400_000).toISOString())
+          .order('created_at', { ascending: false }).limit(500),
+      ),
+  })
+}

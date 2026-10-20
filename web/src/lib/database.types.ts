@@ -123,6 +123,48 @@ export type Database = {
           },
         ]
       }
+      app_errors: {
+        Row: {
+          area: string
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          organization_id: string | null
+          path: string | null
+          release: string | null
+          stack: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          area?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message: string
+          organization_id?: string | null
+          path?: string | null
+          release?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          organization_id?: string | null
+          path?: string | null
+          release?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       buyer_invites: {
         Row: {
           accepted_at: string | null
@@ -131,6 +173,9 @@ export type Database = {
           created_by: string | null
           id: string
           organization_id: string
+          sent_at: string | null
+          sent_to: string | null
+          sent_via: string | null
           token: string
         }
         Insert: {
@@ -140,6 +185,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           organization_id?: string
+          sent_at?: string | null
+          sent_to?: string | null
+          sent_via?: string | null
           token?: string
         }
         Update: {
@@ -149,6 +197,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           organization_id?: string
+          sent_at?: string | null
+          sent_to?: string | null
+          sent_via?: string | null
           token?: string
         }
         Relationships: [
