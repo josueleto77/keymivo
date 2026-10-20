@@ -21,7 +21,7 @@ Estado al 19 de octubre de 2026. ✅ = hecho · 👤 = lo haces tú · 🤖 = lo
 8. 👤 Poner un **límite de gasto en OpenAI** (platform.openai.com → Limits).
 9. 👤 Crear los alias **support@, hello@, privacy@, reviewer@** en Google Workspace.
 10. 👤 Desbloquear keymivo.com en tu red (Xfinity → Advanced Security) o activar DNS seguro en Chrome.
-11. 🤖 Monitoreo de errores (Sentry) y alerta si la app se cae.
+11. ✅ Monitoreo de errores en la app (Admin → Errors). 👤 Falta: alerta si la app se cae (UptimeRobot gratis → app.keymivo.com).
 
 ## Fase 3 — Cobrar de verdad
 12. 👤 Activar la cuenta de Stripe en modo real con los datos de la empresa, EIN y banco.
@@ -44,7 +44,7 @@ Estado al 19 de octubre de 2026. ✅ = hecho · 👤 = lo haces tú · 🤖 = lo
 
 ## Fase 7 — Prueba real y lanzamiento
 23. 👤 Probar un showing real en tu teléfono: grabación, fotos, modo sin señal.
-24. 🤖 Revisión completa como realtor nuevo (registro → onboarding → cliente → tour → showing → análisis → oferta → reporte → portal) y corregir lo que falle.
+24. ✅ Revisión completa como realtor nuevo (registro → onboarding → cliente → tour → showing → análisis → oferta → reporte → portal) y corregir lo que falle.
 25. 👤 Probar Follow Up Boss con una key real.
 26. 🤝 Beta con 3–5 realtors conocidos; ajustar con su feedback.
 27. 🤝 Lanzamiento.
